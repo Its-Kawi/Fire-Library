@@ -5295,12 +5295,11 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     
     local mb = settingsThemeTab:AddToggle("MobileButton", { Text = "Show Mobile Button", NoConfigs = true, Tooltip = "Shows mobile button when UI is minimized", Value = window.Options.MobileButtonVisible, Callback = function(val)
         window.MobileButtonVisible = val
-    end })
-    mb.Visible = window.IsDesktop
+    end, Visible = window.IsDesktop })
 
     local amb = settingsThemeTab:AddToggle("AlwaysMobileButton", { Text = "Always Show Mobile Button", NoConfigs = true, Value = window.Options.MobileButtonAlwaysVisible, Callback = function(val)
         window.MobileButtonAlwaysVisible = val
-    end })
+    end, Visible = window.IsDesktop })
 
     local mbn = settingsThemeTab:AddToggle("MobileButtonNeon", { Text = "Show Mobile Button neon", NoConfigs = true, Value = window.Options.MobileButtonNeon, Callback = function(val)
         window.MobileButtonNeon = val
@@ -9480,15 +9479,15 @@ local windowFuncs; windowFuncs = {
         CornerRadius = 0,
         _PrevVisible = false,
         _OldVisible = false,
-        MobileButtonVisible = device == "Mobile",
-        MobileButtonAlwaysVisible = device == "Mobile",
+        MobileButtonVisible = false,
+        MobileButtonAlwaysVisible = false,
         AnimationSpeed = 1,
         NeonThickness = 1,
         BackgroundTransparency = 0,
         ImageTransparency = 0.85,
         ImageEnabled = true,
         ShadowTransparency = 0.5,
-        Size = U2n(0.7, 250, 0.375, 150), -- better dont change it, I forgot to implement it correctly, now I'm just lazy to fix it
+        Size = device == "Mobile" and U2n(1.35, 0, 0.5, 75) or U2n(0.7, 250, 0.375, 150), -- better dont change it, I forgot to implement it correctly, now I'm just lazy to fix it
         ShadowSize = 27,
         OnClose = function() end,
         Tooltip = "",
@@ -10005,7 +10004,7 @@ local windowFuncs; windowFuncs = {
 
         setIcon(options.ImageEnabled and options.Image or "", backgrounds, self, realWindow.Contents.BackgroundImage, true)
         local button = self.MobileButton
-        button.Visible = options.Flag ~= guid and (options.MobileButtonAlwaysVisible or ((options.MobileButtonVisible or device == "Mobile") and not options.Visible))
+        button.Visible = options.Flag ~= guid and (options.MobileButtonAlwaysVisible or device == "Mobile" or options.MobileButtonVisible and not options.Visible)
         safeReparent(button, options.Flag ~= guid and gui.MobileButtons or nil)
         button.CanvasGroup.TextLabel.Text = title:sub(1, 1):upper()
         setIcon(options.Icon or "", nil, self, button.CanvasGroup.ImageLabel)
@@ -10285,7 +10284,7 @@ local windowFuncs; windowFuncs = {
         end
 
         for i, v in self.Objects do
-            if v.Class ~= "Tab" then
+            if v.Class ~= "Tab" and v.Class ~= "Header" and v.Class ~= "Separator" then
                 v:Destroy()
             end
         end
@@ -10512,7 +10511,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.1.9",
+    Version = "5.1.91",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
