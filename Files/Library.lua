@@ -5513,7 +5513,7 @@ local function fixNum(n)
         local after = str:sub(dot + 1)
 
         if #after > 9 then
-            after = after:sub(1, 13):gsub("0+$", "")
+            after = after:sub(1, 8):gsub("0+$", "")
         end
 
         if after ~= "" then
@@ -10493,6 +10493,14 @@ library = newObject({
     end,
     Notify = function(self, ...)
         return self:Notification(...)
+    end,
+    
+    DecodeShareString = function(self, str)
+        local s, e = pcall(_decodeThingy, str)
+        return s and e or false
+    end,
+    EncodeShareString = function(self, str)
+        return encoder:Encode(je(str))
     end
 })
 
@@ -10511,7 +10519,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.1.91",
+    Version = "5.1.92",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
