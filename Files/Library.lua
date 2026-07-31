@@ -7275,6 +7275,9 @@ local basicObjects = {
             Order = false,
             Translations = tfreeze({ })
         },
+        FixNum = function(self, ...)
+            return fixNum(...)
+        end,
         Set = function(self, value)
             local old = self.Options.Value
             self.Options.Value = value
@@ -10519,7 +10522,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.1.93",
+    Version = "5.1.94",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
