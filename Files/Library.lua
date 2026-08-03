@@ -8299,8 +8299,14 @@ local tabFuncs = {
         cons[#cons + 1] = tab.GroupboxZone.LeftGroupboxZone.ChildRemoved:Connect(gbc2)
         cons[#cons + 1] = tab.GroupboxZone.RightGroupboxZone.ChildAdded:Connect(gbc)
         cons[#cons + 1] = tab.GroupboxZone.RightGroupboxZone.ChildRemoved:Connect(gbc2)
+        
+        local cnt = 0
         cons[#cons + 1] = rs.RenderStepped:Connect(function()
-            tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
+            cnt = (cnt + 1) % 5
+            
+            if cnt == 0 then
+                tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
+            end
         end)
 
         defer(function()
@@ -9687,8 +9693,14 @@ local windowFuncs; windowFuncs = {
 
         local shOpen = false
         local msf = window.RealWindow.Contents.Display.PageButtons.List.MobileSizeFix
+        local cnt = 0
+        
         cons[#cons + 1] = rs.RenderStepped:Connect(function()
-            msf.Size = U2n(mrandom(), 0, 0, 1)
+            cnt = (cnt + 1) % 5
+            
+            if cnt == 0 then
+                msf.Size = U2n(mrandom(), 0, 0, 1)
+            end
 
             for i, v in object.Options._PrevTheme do
                 if object.Options.Theme[i] ~= v then
@@ -9810,6 +9822,7 @@ local windowFuncs; windowFuncs = {
             end
         end)
 
+        local cnt = 0
         myCons[#myCons + 1] = rs.RenderStepped:Connect(function(dt)
             local fps = 1 / dt
             if fps > 100000 then
@@ -9822,8 +9835,9 @@ local windowFuncs; windowFuncs = {
             end
 
             tinsert(buffer, fps)
-
-            if not label.Visible then return end
+            
+            cnt = (cnt + 1) % 5
+            if not label.Visible or cnt ~= 0 then return end
 
             local lines = { }
             local inserted = false
@@ -10522,7 +10536,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.1.94",
+    Version = "5.1.95",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
