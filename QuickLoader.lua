@@ -1,7 +1,7 @@
 --[[
 	This is a quick version of FireLibrary's loader (only for exploit environments)
 	Everything is pretty much the same as in the original library, but this one loads much faster (but update check comes AFTER the main loading cycle)
-	Read the README.md and Loader.lua for more info
+	Read the README.md for more info
 ]]--
 
 ---
@@ -32,7 +32,7 @@ local function httpGet(url)
 end
 
 local function getLastCommitID()
-	return http:JSONDecode(httpGet("https://api.github.com/repos/Null-Cherry/Fire-Library/commits?path=Files%2FLibrary%2Elua", true))[1].sha
+	return http:JSONDecode(httpGet("https://api.github.com/repos/Its-Kawi/Fire-Library/commits?path=Files%2FLibrary%2Elua", true))[1].sha
 end
 
 local function fix(str)
@@ -66,7 +66,7 @@ local success, error
 local spawn = task.spawn
 
 local function update()
-	local contents = httpGet("https://raw.githubusercontent.com/Null-Cherry/Fire-Library/refs/heads/main/Files/Library.lua", true)
+	local contents = httpGet("https://raw.githubusercontent.com/Its-Kawi/Fire-Library/refs/heads/main/Files/Library.lua", true)
 	local local1 = contents:find("local", 1, true)
 	if not local1 then return false, "Invalid request return" end
 
