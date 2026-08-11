@@ -6658,29 +6658,30 @@ local colorPickerBase = {
         self:Refresh()
         spawn(self.Options.Callback, color, self)
     end,
-    Refresh = function(self)
-        local window = getWindow(self)
-        local sinst = self.Instance
-        local inst = sinst.Display
-        local options = self.Options
-        local woptions = window.Options
+	Refresh = function(self)
+		local window = getWindow(self)
+		local sinst = self.Instance
+		local inst = sinst.Display
+		local options = self.Options
+		local woptions = window.Options
 
-        inst.BackgroundColor3 = options.Value
-        inst.UIStroke.Color = window.Theme.Stroke
-        inst.Darker.Visible = options.Disabled
-        inst.Parent.Visible = options.Visible
-        inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
-        inst.UIStroke.Enabled = not woptions.NoStrokes
-        orderUpdate(inst, options.Order)
+		inst.BackgroundColor3 = options.Value
+		inst.UIStroke.Color = window.Theme.Stroke
+		inst.Darker.Visible = options.Disabled
+		inst.Parent.Visible = options.Visible
+		inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+		inst.UIStroke.Enabled = not woptions.NoStrokes
+		orderUpdate(inst, options.Order)
 
-        local parent = self.Parent
-        if not parent then return end
+		local parent = self.Parent
+		if not parent then return end
 
-        local pickers = sinst:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
+		local instance = parent.Instance
+		local pickers = instance:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
 
-        safeReparent(pickers, sinst)
-        safeReparent(sinst, pickers)
-    end
+		safeReparent(pickers, instance)
+		safeReparent(sinst, pickers)
+	end
 }
 
 acp = function(...)
