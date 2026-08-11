@@ -6,7 +6,7 @@
 
 ---
 
-local GITHUB =  "https://api.github.com/repos/Null-Cherry/"
+local GITHUB =  "https://api.github.com/repos/Its-Kawi/"
 local http = game:GetService("HttpService")
 local sg = game:GetService("StarterGui")
 
