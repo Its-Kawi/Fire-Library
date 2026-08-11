@@ -372,10 +372,11 @@ do -- Set properties
     objects["Instance0"]["Parent"] = parent;
     objects["Instance0"]["IgnoreGuiInset"] = true;
     objects["Instance0"]["ClipToDeviceSafeArea"] = false;
+    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["Name"] = "FireLibV5";
     objects["Instance0"]["DisplayOrder"] = 2147483647;
-    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["ScreenInsets"] = Enum.ScreenInsets.DeviceSafeInsets;
+    objects["Instance0"]["Enabled"] = false;
     objects["Instance0"]["SafeAreaCompatibility"] = Enum.SafeAreaCompatibility.None;
     objects["Instance0"]["ResetOnSpawn"] = false;
 
@@ -4132,7 +4133,7 @@ local key = ... or config.Name
 if global[key] then
     script.Parent:Destroy()
     render()
-    
+
     return global[key]
 end
 
@@ -4180,7 +4181,7 @@ local antiRich do
         [">"] = "&gt;",
         ["&"] = "&amp;"
     }
-    
+
     function antiRich(str)
         return str:gsub("[&<>'\"%z]", richReplace)
     end
@@ -4323,13 +4324,13 @@ local function readTimes(path)
             times += 1
         end
     end
-    
+
     times = tonumber(times) or not rf and 1.1 or 1
-    
+
     if configsEnabled then
         spawn(wf, path, tostring(max(round(times), 1)))
     end
-    
+
     return times
 end
 
@@ -4401,16 +4402,16 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     local settingsConfigTab = window:AddTab("LibrarySettings" .. window.Flag .. "2", { Text = "Config Settings", Icon = "Cog", Order = max32 - 1 })
     local settingsThemeTab = window:AddTab("LibrarySettings" .. window.Flag .. "3", { Text = "Theme Settings", Icon = "Cog", Order = max32 - 2 })
     local settingsOtherTab = window:AddTab("LibrarySettings" .. window.Flag .. "4", { Text = "Other Settings", Icon = "Cog", Order = max32 - 3 })
-    
+
     local current = "Main"
     local reparent
-    
+
     local function tabOnTabSetup(tab)
         tab:AddButton({ Text = "Go Back", Icon = "circle-arrow-left", Callback = function()
             current = "Main"
             reparent()
         end })
-        
+
         tab:AddSeparator({ Invisible = true })
     end
 
@@ -4451,7 +4452,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         "Emulator: <b>" .. (window.Emulator and "Yes" or "No") .. "</b>",
         "Library version: <b>" .. window.Version .. "</b>"
     }
-    
+
     local einfo = settingsMainTab:AddLabel("EINFO", { Text = concat(textList, "\n") })
 
     local theOnlySeparator = settingsMainTab:AddSeparator({ Visible = false })
@@ -4463,7 +4464,8 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
     local cp1
     local executionTimes : number = nil
-    
+
+    local configString
     spawn(function()
         local fl = window.FlagHash .. "/"
         local hidden = { }
@@ -4502,7 +4504,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         local autoSavingEnabled = false
         local configTextBox, configDropdown, themeTextBox, themeDropdown
         local debugAutoSave = false
-        
+
         if configsEnabled then
             configTextBox = settingsConfigTab:AddTextBox("ConfigName", {
                 PlaceholderText = "Enter Config name",
@@ -4594,7 +4596,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 else
                     window:Notification({ Title = "Error", Text = "Invalid config file" })
                 end
-                
+
                 autoSavingEnabled = true
             end
 
@@ -4662,7 +4664,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             hidden[#hidden + 1] = settingsConfigTab:AddSeparator({ Invisible = true, Visible = false })
         end
 
-        local configString = settingsConfigTab:AddTextBox("ConfigString", {
+        configString = settingsConfigTab:AddTextBox("ConfigString", {
             NoConfigs = true,
             Instant = true,
             Text = "Config Share string",
@@ -4682,40 +4684,40 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 end
             end
         })
-        
+
         window._Connections[#window._Connections + 1] = configString.Instance.View.Bar.Focused:Connect(function()
-            configString.Value = window:GetConfigString()
+            configString:Set(window:GetConfigString())
         end)
-        
+
         local changed = false
         spawn(function()
             while wait(0.25 + render()) and not window.Closed do
                 if changed then
-                    configString.Value = window:GetConfigString()
+                    configString:Set(window:GetConfigString())
                     changed = false
-                    
+
                     if autoSavingEnabled and autoSaveConfig.Value then
                         defer(saveConfig, debugAutoSave)
                     end
                 end
             end
         end)
-        
+
         local function trackChanges(obj)
             if obj == configString then return end
-            
+
             local options = obj.Options
             window._Connections[#window._Connections + 1] = obj.Changed:Connect(function()
-                if not options.NoConfigs then
+                if not changed and not options.NoConfigs then
                     changed = true
                 end
             end)
         end
-        
+
         for i, v in window.AllObjects do
             pcall(trackChanges, v)
         end
-        
+
         window._Connections[#window._Connections + 1] = window.ObjectAdded:Connect(function(v)
             pcall(trackChanges, v)
         end)
@@ -4927,7 +4929,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
             local cont = rf(configRoute, true)
             autoSaveConfig.Value = rf(autosaveRoute, true)
-            
+
             if typeof(cont) == "table" then
                 autoLoadConfig.Value = true
                 configTextBox.Value = cont[1]
@@ -5094,7 +5096,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
     toggle = settingsThemeTab:AddCheckBox("LightMode", { Text = "Light Mode", Value = false, NoConfigs = true })
     toggle2 = settingsThemeTab:AddCheckBox("UseRandomColor", { Text = "Use Random Color", Value = false, NoConfigs = true, Callback = function(value)
-        cp1.Enabled = value
+        cp1.Disabled = not value
     end })
 
     cp1 = btn:AddColorPicker({ NoConfigs = true, Value = targetColor, Tooltip = "Target color" })
@@ -5142,7 +5144,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             end, Disabled = true })
         end
     end
-    
+
     settingsThemeTab:AddHeader({ Text = "Info Label" })
     local ile = settingsThemeTab:AddTextBox({ PlaceholderText = "Manual Info Label extra text", MultiLine = true, Instant = true, NoConfigs = true, Value = window.Options.InfoLabelExtra or "", Text = "Info label extra text", Callback = function(val)
         window.Options.InfoLabelExtra = val
@@ -5180,7 +5182,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     end })
 
     settingsThemeTab:AddSeparator({ Invisible = true })
-    
+
     mt = settingsThemeTab:AddToggle({ Text = "Modern Toggles", NoConfigs = true, Value = window.Options.ModernToggles, Callback = function(val)
         window.ModernToggles = val
         lmt.Disabled = not rest.Value and not mt.Value
@@ -5188,10 +5190,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     lmt = settingsThemeTab:AddToggle({ Text = "Large Modern Toggles", NoConfigs = true, Value = window.Options.LargeModernToggles, Callback = function(val)
         window.LargeModernToggles = val
     end })
-    
+
     lmt.Disabled = not rest.Value and not mt.Value
     settingsThemeTab:AddSeparator({ Invisible = true })
-    
+
     local bbg = settingsThemeTab:AddToggle("BlurBackground", { Text = "Blur Behind UI", Tooltip = "<b>NOT ALWAYS WORKING</b>\nUsually high quality required for this feature to work", NoConfigs = true, Value = window.Options.BlurBackground, Callback = function(val)
         window.BlurBackground = val
     end })
@@ -5290,9 +5292,9 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         window.Volume = val
         playSound("Test", window)
     end, Min = 0, Max = 200, Step = 1, Format = "%" })
-    
+
     settingsThemeTab:AddHeader({ Text = "Mobile Button" })
-    
+
     local mb = settingsThemeTab:AddToggle("MobileButton", { Text = "Show Mobile Button", NoConfigs = true, Tooltip = "Shows mobile button when UI is minimized", Value = window.Options.MobileButtonVisible, Callback = function(val)
         window.MobileButtonVisible = val
     end, Visible = window.IsDesktop })
@@ -5388,12 +5390,8 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         upd()
     end)
 
-    spawn(function()
-        while wait(0.35) and not window.Closed do
-            upd()
-        end
-    end)
-    
+    window._Connections[#window._Connections + 1] = configString.Changed:Connect(upd)
+
     local function addTabToTab(name, icon)
         settingsMainTab:AddButton({ Text = "Go to " .. name .. " Settings page", Tooltip = name, Callback = function()
             current = name
@@ -5402,10 +5400,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     end
 
     settingsMainTab:AddSeparator({ Invisible = true })
-    settingsMainTab:AddInput("KeybindEditing", { Text = "Toggle Keybind editing mode", Callback = function()
+    settingsMainTab:AddButton({ Text = "Toggle Keybind editing mode", Callback = function()
         window.Options.KeybindMode:Fire(not window.KeybindModeActive)
     end })
-    
+
     settingsMainTab:AddSeparator({ Invisible = true })
     addTabToTab("Theme", "Brush")
     addTabToTab("Config", "Cog")
@@ -5491,16 +5489,16 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     window._Connections[#window._Connections + 1] = c6
     window._Connections[#window._Connections + 1] = c7
     window._Connections[#window._Connections + 1] = c8
-    
+
     reparent()
     repeat render() until executionTimes
-    
+
     window.Options.FirstExecution = executionTimes <= 1
     window.Options.ExecutionTimes = round(executionTimes)
-    
+
     textList[#textList + 1] = "Library executions: <b>" .. ranTimes .. "</b>"
     einfo.Text = concat(textList, "\n")
-    
+
     window:Refresh()
 end
 
@@ -5844,7 +5842,7 @@ local newObject do
         if inited.Options[currentProperty] == nil then
             error("Expected ':' not '.' calling Set function", 0)
         end
-        
+
         local proxy = inited.Proxy
         if not proxy then
             inited[currentProperty] = value
@@ -5966,16 +5964,16 @@ local newObject do
         inited:Refresh()
         deferedRefreshes[s] = nil
     end
-    
+
     local function newidx(self, key, val)
         local key = (key:sub(1, 1):upper() .. key:sub(2)):gsub("Caption", "Tooltip"):gsub("HoverText", "Tooltip")
 
         local inited = references[self] or self
         local newValue = key == "Enabled" and not val or key ~= "Enabled" and (val ~= nil and val or false)
-        
+
         if inited.Options[key] ~= newValue then
             inited.Options[key] = newValue
-            
+
             local s = tostring(inited)
             if not deferedRefreshes[s] then
                 deferedRefreshes[s] = true
@@ -6007,14 +6005,14 @@ local newObject do
         end
 
         ID = clean(tostring(ID), false)
-        
+
         local flag: string = ID
         options.Flag = flag
-        
+
         ID = ID:lower():gsub("[\0-\47\58-\64\92-\94\96\123-\255]", "") .. "_id"
         counters[ID] = (counters[ID] or -1) + 1
         ID ..= counters[ID]
-        
+
         local hash = compressor:Hash(ID)
         local h = hash:sub(1, clamp(#flag, 2, 3) - 1)
         counters[h] = (counters[h] or -1) + 1
@@ -6024,7 +6022,7 @@ local newObject do
         options.FlagHash = hash:sub(1, 16)
         options.FlagHashLong = hash
         options.FlagHashFull = hash
-        
+
         if options.Default ~= nil then
             options.Value, options.Default = options.Default, nil
         end
@@ -6044,7 +6042,7 @@ local newObject do
 
         return (str:gsub("userdata", ref.Class or "Object"))
     end
-    
+
     newObject = function(instructions, parent, ...)
         local window = parent and getWindow(parent)
         local inited = instructions:Init(getOptions(parent and getWindow(parent), instructions, ...))
@@ -6068,7 +6066,7 @@ local newObject do
         references[object] = inited
         inited.Proxy = object
         inited.Parent = parent
-        
+
         if window then
             tinsert(window.AllObjects, object)
             window.ObjectAdded:Fire(object)
@@ -6371,28 +6369,37 @@ end
 local function hoverLogic(object, instance)
     local window = getWindow(object)
     local cons = window._Connections
+    local mouseIn = false
 
     cons[#cons + 1] = instance.MouseEnter:Connect(function()
         if not object.Options.Disabled then
             spawn(playSound, "Hover", window)
         end
 
-        tooltipObject.Options.Window = window
-        tooltipObject.Text = translate(object, "Tooltip")
+        mouseIn = true
+
         render()
+
+        local tt = object.Options.Disabled and translate(object, "DisabledTooltip")
+        if #tt == 0 then tt = translate(object, "Tooltip") end
+
         tooltipObject.Options.Window = window
-        tooltipObject.Text = translate(object, "Tooltip")
+        tooltipObject.Options.Dark = object.Options.Disabled
+        tooltipObject.Text = tt
     end)
 
     cons[#cons + 1] = instance.MouseLeave:Connect(function()
+        mouseIn = false
+
         tooltipObject.Options.Window = coreWindow
+        tooltipObject.Options.Dark = false
         tooltipObject.Text = ""
     end)
 end
 
 local _refreshEverything; _refreshEverything = function(enumerable)
     pcall(enumerable.Refresh, enumerable)
-    
+
     local cl = enumerable.Class
     if cl == "ColorPicker" or cl == "Keybind" then
         for i, v in enumerable.ColorPickers do
@@ -6562,9 +6569,10 @@ local colorPickerBase = {
     DefaultOptions = {
         Value = C3n(1, 1, 1),
         Callback = function(color) end,
-        Enabled = true,
+        Disabled = true,
         Visible = true,
         Tooltip = "",
+        DisabledTooltip = "",
         Order = 0,
 
         _connected = false
@@ -6604,11 +6612,12 @@ local colorPickerBase = {
         defer(addCons, object, cons)
 
         cons[#cons + 1] = instance.MouseButton1Click:Connect(function()
-            if picking or not object.Options.Enabled then return end
+            if picking or object.Options.Disabled then return end
             picking = true
             spawn(playSound, "Click", object)
 
-            local color = getWindow(object.Proxy):ColorPicker({ Value = object.Options.Value, Text = #object.Options.Tooltip > 0 and object.Options.Tooltip or object.Proxy.Parent and object.Proxy.Parent.Text or "Color Picker" })
+            local tt =  object.Options.Tooltip
+            local color = getWindow(object.Proxy):ColorPicker({ Value = object.Options.Value, Text = #tt > 0 and tt or object.Proxy.Parent and object.Proxy.Parent.Text or "Color Picker" })
             if color then
                 object:Call(color)
             end
@@ -6622,7 +6631,7 @@ local colorPickerBase = {
     Call = function(self, color)
         self:Refresh()
 
-        if not self.Options.Enabled then return end
+        if self.Options.Disabled then return end
 
         self.Options.Value = color
         self:Refresh()
@@ -6630,23 +6639,26 @@ local colorPickerBase = {
     end,
     Refresh = function(self)
         local window = getWindow(self)
-        local inst = self.Instance.Display
-        inst.BackgroundColor3 = self.Options.Value
+        local sinst = self.Instance
+        local inst = sinst.Display
+        local options = self.Options
+        local woptions = window.Options
+
+        inst.BackgroundColor3 = options.Value
         inst.UIStroke.Color = window.Theme.Stroke
-        inst.Darker.Visible = not self.Options.Enabled
-        inst.Parent.Visible = self.Options.Visible
-        inst.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-        inst.UIStroke.Enabled = not window.Options.NoStrokes
-        orderUpdate(inst, self.Options.Order)
+        inst.Darker.Visible = options.Disabled
+        inst.Parent.Visible = options.Visible
+        inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        inst.UIStroke.Enabled = not woptions.NoStrokes
+        orderUpdate(inst, options.Order)
 
         local parent = self.Parent
         if not parent then return end
 
-        local instance = parent.Instance
-        local pickers = instance:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
+        local pickers = sinst:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
 
-        safeReparent(pickers, instance)
-        safeReparent(self.Instance, pickers)
+        safeReparent(pickers, sinst)
+        safeReparent(sinst, pickers)
     end
 }
 
@@ -6760,16 +6772,23 @@ local keybindBase = {
     end,
     Refresh = function(self, set)
         local window = getWindow(self)
-        local inst = self.Instance.Display
-        inst.TextColor3 = window.Theme.Main
-        inst.UIStroke.Color = window.Theme.Stroke
+        local sinst = self.Instance
+        local inst = sinst.Display
+        local options = self.Options
+        local woptions = window.Options
+
+        local theme = window.Theme
+        local themeS = theme.Stroke
+
+        inst.TextColor3 = theme.Main
+        inst.UIStroke.Color = themeS
         inst.Parent.Visible = window.IsDesktop and window.KeybindModeActive
-        inst.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-        inst.UIStroke.Enabled = not window.Options.NoStrokes
-        inst.BackgroundColor3 = window.Theme.Stroke
+        inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        inst.UIStroke.Enabled = not woptions.NoStrokes
+        inst.BackgroundColor3 = themeS
         orderUpdate(inst, -max32)
 
-        local v = self.Options.Value
+        local v = options.Value
         if typeof(v) == "EnumItem" then
             v = v.Value
         elseif tonumber(v) then
@@ -6780,18 +6799,18 @@ local keybindBase = {
             v = false
         end
 
-        self.Options.Value = v
+        options.Value = v
         if inputting == self then
             inst.Text = "..."
         else
-            inst.Text = (not self.Options.Value or not Enum.KeyCode:FromValue(self.Options.Value)) and "None" or gsubInput(Enum.KeyCode:FromValue(self.Options.Value).Name)
+            inst.Text = (not options.Value or not Enum.KeyCode:FromValue(options.Value)) and "None" or gsubInput(Enum.KeyCode:FromValue(options.Value).Name)
         end
 
         if set then
             window.KeybindMode:Fire(window.KeybindModeActive)
         end
 
-        local ref = self.Options.Reference
+        local ref = options.Reference
         if not ref then return end
 
         local gb = ref.Parent.Class == "Groupbox"
@@ -6807,7 +6826,7 @@ local keybindBase = {
         local pickers = instance:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
 
         safeReparent(pickers, instance)
-        safeReparent(self.Instance, pickers)
+        safeReparent(sinst, pickers)
     end
 }
 
@@ -6835,6 +6854,7 @@ local basicObjects = {
             Holdable = false,
             Value = false,
             Tooltip = "",
+            DisabledTooltip = "",
             Icon = "Cursor",
             Order = false,
             Translations = tfreeze({ })
@@ -6928,9 +6948,10 @@ local basicObjects = {
             local view = inst.View
             local opts = self.Options
 
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            view.Label.TextColor3 = window.Theme.Text
-            view.Icon.ImageColor3 = opts.RecolorIcon and window.Theme.Text or C3n(1, 1, 1)
+            local themeT = window.Theme.Text
+            inst.Separator.BackgroundColor3 = themeT
+            view.Label.TextColor3 = themeT
+            view.Icon.ImageColor3 = opts.RecolorIcon and themeT or C3n(1, 1, 1)
 
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(100, 0, 0, y2)
@@ -6955,6 +6976,7 @@ local basicObjects = {
             Visible = true,
             Disabled = false,
             Tooltip = "",
+            DisabledTooltip = "",
             Multi = false,
             Opened = false,
             Value = false, -- automatically converts into a table/number when needed
@@ -7061,9 +7083,11 @@ local basicObjects = {
         end,
 
         Refresh = function(self)
-            local y = self.Parent.Class == "Groupbox" and 44 or 50
-            local y2 = self.Parent.Class == "Groupbox" and 14 or 16
-            local y3 = self.Parent.Class == "Groupbox" and 10 or 14
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
+            local y = ispgb and 44 or 50
+            local y2 = ispgb and 14 or 16
+            local y3 = ispgb and 10 or 14
 
             local options = self.Options
             local window = getWindow(self)
@@ -7072,17 +7096,31 @@ local basicObjects = {
             local label = view.Label
             local viewList = view.List
 
+            local labelL = label.Label
+            local viewLNC = viewList.NoContents
+            local viewLS = viewList.Selected
+            local viewLL = viewList.List
+            local licon = label.Icon
+
+            local viewLSVal = viewLS.Value
+            local vuis = viewList.UIStroke
+
+            local theme = window.Theme
+            local themeT = theme.Text
+            local themeS = theme.Stroke
+            local themeM = theme.Main
+
             orderUpdate(inst, options.Order)
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            label.Label.TextColor3 = window.Theme.Text
-            label.Icon.ImageColor3 = window.Theme.Text
-            label.Icon.Opened.ImageColor3 = window.Theme.Text
-            viewList.BackgroundColor3 = window.Theme.Stroke
-            viewList.NoContents.TextColor3 = window.Theme.Main
-            viewList.NoContents.TextStrokeColor3 = window.Theme.Stroke
-            viewList.Selected.Value.TextColor3 = window.Theme.Main
-            viewList.Selected.Value.TextStrokeColor3 = window.Theme.Stroke
-            viewList.UIStroke.Color = window.Theme.Stroke
+            inst.Separator.BackgroundColor3 = themeT
+            labelL.TextColor3 = themeT
+            licon.ImageColor3 = themeT
+            licon.Opened.ImageColor3 = themeT
+            viewList.BackgroundColor3 = themeS
+            viewLNC.TextColor3 = themeM
+            viewLNC.TextStrokeColor3 = themeS
+            viewLSVal.TextColor3 = themeM
+            viewLSVal.TextStrokeColor3 = themeS
+            vuis.Color = themeS
 
             if options.Value ~= false and typeof(options.Value) ~= "number" and typeof(options.Value) ~= "table" then
                 options.Value = tfind(options.Values, options.Value) or false
@@ -7133,62 +7171,63 @@ local basicObjects = {
             end
 
             inst.Visible = options.Visible
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
-            label.Label.Text = translate(self, "Text")
-            label.Label.TextTransparency = options.Disabled and 0.35 or 0
-            label.Icon.ImageTransparency = options.Disabled and 0.35 or 0
-            viewList.Selected.Value.TextTransparency = options.Disabled and 0.35 or 0
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+            labelL.Text = translate(self, "Text")
+            labelL.TextTransparency = options.Disabled and 0.35 or 0
+            licon.ImageTransparency = options.Disabled and 0.35 or 0
+            viewLSVal.TextTransparency = options.Disabled and 0.35 or 0
 
             local displayText = self:Convert(options.Value, true)
-            viewList.Selected.Value.Text = displayText or "None"
+            viewLSVal.Text = displayText or "None"
 
-            viewList.List.Visible = false
-            viewList.Selected.Visible = false
-            viewList.NoContents.Visible = false
-            view.Position = self.Parent.Class == "Groupbox" and U2o(7, 4) or U2o(15, 8)
-            view.Size = self.Parent.Class == "Groupbox" and U2n(1, -14, 0, 14) or U2n(1, -30, 0, 16)
-            label.Icon.ImageTransparency = options.Opened and 1 or 0
-            label.Icon.Opened.Visible = options.Opened
+            viewLL.Visible = false
+            viewLS.Visible = false
+            viewLNC.Visible = false
+            view.Position = ispgb and U2o(7, 4) or U2o(15, 8)
+            view.Size = ispgb and U2n(1, -14, 0, 14) or U2n(1, -30, 0, 16)
+            licon.ImageTransparency = options.Opened and 1 or 0
+            licon.Opened.Visible = options.Opened
             viewList.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-            viewList.UIStroke.Enabled = not window.Options.NoStrokes
+            vuis.Enabled = not window.Options.NoStrokes
 
-            for _, conn in self.DynamicConnections do
+            local dc = self.DynamicConnections
+            for _, conn in dc do
                 if conn.Connected then
                     conn:Disconnect()
                 end
             end
+            tclear(dc)
 
-            tclear(self.DynamicConnections)
             if options.Opened then
                 if #options.Values == 0 then
-                    viewList.NoContents.Visible = true
+                    viewLNC.Visible = true
                     inst.Size = U2n(1, 0, 0, y)
                     viewList.Size = U2n(1, 0, 0, y2)
 
-                    for _, child in viewList.List:GetChildren() do
+                    for _, child in viewLL:GetChildren() do
                         if child:IsA("GuiObject") then
                             child:Destroy()
                         end
                     end
                 else
-                    viewList.List.Visible = true
+                    viewLL.Visible = true
                     inst.Size = U2n(1, 0, 0, (y - y3) + (#options.Values * 14))
                     viewList.Size = U2n(1, 0, 0, #options.Values * 14)
 
                     for i, val in options.Values do
-                        local row = viewList.List:FindFirstChild(tostring(i))
+                        local row = viewLL:FindFirstChild(tostring(i))
                         if not row then
                             row = getPlaceholder("DropdownRow")
                             row.Name = tostring(i)
                         end
 
-                        safeReparent(row, viewList.List)
+                        safeReparent(row, viewLL)
                         row.Text = tostring(val)
                         row.Size = U2s(1, 1 / #options.Values)
-                        row.TextColor3 = ((options.Multi and tfind(options.Value, i)) or (not options.Multi and options.Value == i)) and window.Theme.Main or window.Theme.Text
-                        row.TextStrokeColor3 = window.Theme.Stroke
+                        row.TextColor3 = ((options.Multi and tfind(options.Value, i)) or (not options.Multi and options.Value == i)) and themeM or themeT
+                        row.TextStrokeColor3 = themeS
 
-                        self.DynamicConnections[#self.DynamicConnections + 1] = row.MouseButton1Click:Connect(function()
+                        dc[#dc + 1] = row.MouseButton1Click:Connect(function()
                             if options.Multi then
                                 local found = tfind(options.Value, i)
                                 if found then
@@ -7221,27 +7260,27 @@ local basicObjects = {
                             self:Call(value, converted)
                         end)
 
-                        self.DynamicConnections[#self.DynamicConnections + 1] = row.MouseButton1Down:Connect(function()
+                        dc[#dc + 1] = row.MouseButton1Down:Connect(function()
                             castCircle(row, getWindow(self))
                         end)
 
-                        self.DynamicConnections[#self.DynamicConnections + 1] = row.MouseEnter:Connect(function()
+                        dc[#dc + 1] = row.MouseEnter:Connect(function()
                             spawn(playSound, "Hover", self)
                         end)
                     end
 
-                    for _, child in viewList.List:GetChildren() do
+                    for _, child in viewLL:GetChildren() do
                         if child:IsA("GuiObject") and tonumber(child.Name) and tonumber(child.Name) > #options.Values then
                             child:Destroy()
                         end
                     end
                 end
             else
-                viewList.Selected.Visible = true
+                viewLS.Visible = true
                 inst.Size = U2n(1, 0, 0, y)
                 viewList.Size = U2n(1, 0, 0, y2)
 
-                for _, child in viewList.List:GetChildren() do
+                for _, child in viewLL:GetChildren() do
                     if child:IsA("GuiObject") then
                         child:Destroy()
                     end
@@ -7272,6 +7311,7 @@ local basicObjects = {
             Value = 50,
             _Value = -1,
             Tooltip = "",
+            DisabledTooltip = "",
             Order = false,
             Translations = tfreeze({ })
         },
@@ -7366,7 +7406,7 @@ local basicObjects = {
             local con; con = instance.InputBegan:Connect(function(input)
                 local touch = input.UserInputType == Enum.UserInputType.Touch
                 if input.UserInputType ~= Enum.UserInputType.MouseButton1 and not touch or clicks > 1 or not mouseDown then return end
-                
+
                 if object.Options.Disabled then sliding = false return end
                 sliding = true
 
@@ -7377,22 +7417,22 @@ local basicObjects = {
 
                 local startX = mouse.X
                 local startY = mouse.Y
-                
+
                 while device == "Mobile" do
                     mouse.Move:Wait()
                     local d = render()
-                    
+
                     if abs(mouse.Y - startY) > 25 then
                         sliding = false
                         c:Disconnect()
                         return
                     end
-                    
+
                     if abs(mouse.X - startX) > 25 then
                         break
                     end
                 end
-                
+
                 while sliding and not object.Options.Disabled and con.Connected do
                     spawn(object.Call, object, clamp((mouse.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1), true)
                     render()
@@ -7443,82 +7483,97 @@ local basicObjects = {
         Refresh = function(self)
             local texttt = translate(self, "Text")
             local forceCompact = clean(texttt) == ""
-            local compact = self.Options.Compact or forceCompact
+            local options = self.Options
+            local compact = options.Compact or forceCompact
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
 
-            local y = self.Parent.Class == "Groupbox" and (compact and 30 or 40) or (compact and 30 or 50)
-            local y2 = self.Parent.Class == "Groupbox" and 14 or 16
-            local x = self.Parent.Class == "Groupbox" and -14 or -30
+            local y = ispgb and (compact and 30 or 40) or (compact and 30 or 50)
+            local y2 = ispgb and 14 or 16
+            local x = ispgb and -14 or -30
 
-            if self.Options.Minimum ~= nil then
-                self.Options.Min, self.Options.Minimum = self.Options.Minimum, nil
+            if options.Minimum ~= nil then
+                options.Min, options.Minimum = options.Minimum, nil
             end
-            if self.Options.Maximum ~= nil then
-                self.Options.Max, self.Options.Maximum = self.Options.Maximum, nil
+            if options.Maximum ~= nil then
+                options.Max, options.Maximum = options.Maximum, nil
             end
 
             local window = getWindow(self)
+            local woptions = window.Options
+
             local inst = self.Instance
             local view = inst.View
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            view.Label.TextColor3 = window.Theme.Text
-            view.Bar.BackgroundColor3 = window.Theme.Stroke
-            view.Bar.Fill.BackgroundColor3 = window.Theme.Main
-            view.Bar.Progress.TextColor3 = window.Theme.Text
-            view.Bar.Progress.TextStrokeColor3 = window.Theme.Stroke
-            view.Bar.Position = U2s(0.5, compact and 0.5 or 1.65)
-            view.Bar.UIStroke.Color = window.Theme.Stroke
-            orderUpdate(inst, self.Options.Order)
+            local theme = window.Theme
+            local themeT = theme.Text
+            local themeS = theme.Stroke
 
-            inst.Visible = self.Options.Visible
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
+            local viewBar = view.Bar
+            local viewLabel = view.Label
 
-            self.Options.Maximum = self.Options.Max
-            self.Options.Minimum = self.Options.Min
+            local viewBarProgress = viewBar.Progress
+            local viewBarFill = viewBar.Fill
 
-            if typeof(self.Options.Format) ~= "function" then
-                self.Options.Format = functions[self.Options.Format or ""] or functions["/"]
+            inst.Separator.BackgroundColor3 = themeT
+            viewLabel.TextColor3 = themeT
+            viewBar.BackgroundColor3 = themeS
+            viewBarFill.BackgroundColor3 = theme.Main
+            viewBarProgress.TextColor3 = themeT
+            viewBarProgress.TextStrokeColor3 = themeS
+            viewBar.Position = U2s(0.5, compact and 0.5 or 1.65)
+            viewBar.UIStroke.Color = themeS
+            orderUpdate(inst, options.Order)
+
+            inst.Visible = options.Visible
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+
+            options.Maximum = options.Max
+            options.Minimum = options.Min
+
+            if typeof(options.Format) ~= "function" then
+                options.Format = functions[options.Format or ""] or functions["/"]
             end
 
-            local formattedText = self.Options.Format and (typeof(self.Options.Format) == "string" and self.Options["Format"] --[[suspend studio warning]] or tostring(self.Options.Format(self.Options))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
+            local formattedText = options.Format and (typeof(options.Format) == "string" and options["Format"] --[[suspend studio warning]] or tostring(options.Format(options))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
 
-            view.Label.Visible = not compact
-            view.Bar.Progress.TextXAlignment = compact and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center
-            view.Bar.Progress.Visible = not self.Options._SettingValue
-            view.Bar.InputProgress.Visible = self.Options._SettingValue
-            view.Bar.InputProgress.TextXAlignment = view.Bar.Progress.TextXAlignment
+            viewLabel.Visible = not compact
+            viewBarProgress.TextXAlignment = compact and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center
+            viewBarProgress.Visible = not options._SettingValue
+            viewBar.InputProgress.Visible = options._SettingValue
+            viewBar.InputProgress.TextXAlignment = viewBarProgress.TextXAlignment
 
             if not compact then
-                view.Bar.Progress.Text = formattedText
-                view.Label.Text = texttt
+                viewBarProgress.Text = formattedText
+                viewLabel.Text = texttt
             else
-                view.Bar.Progress.Text = forceCompact and (self.Options.ShowCompactValue and formattedText or "") or texttt .. (self.Options.ShowCompactValue and " (" .. formattedText .. ")" or "")
+                viewBarProgress.Text = forceCompact and (options.ShowCompactValue and formattedText or "") or texttt .. (options.ShowCompactValue and " (" .. formattedText .. ")" or "")
             end
 
-            view.Label.TextTransparency = self.Options.Disabled and 0.35 or 0
-            view.Bar.Fill.BackgroundTransparency = self.Options.Disabled and 0.35 or 0
-            
-            local style = self.Options.Styled
+            viewLabel.TextTransparency = options.Disabled and 0.35 or 0
+            viewBarFill.BackgroundTransparency = options.Disabled and 0.35 or 0
+
+            local style = options.Styled
             local styled = not not style
-            view.Bar.Progress.TextTransparency = self.Options.Disabled and not styled and 0.35 or 0
-            
-            local styleObject = view.Bar:FindFirstChild("Style")
+            viewBarProgress.TextTransparency = options.Disabled and not styled and 0.35 or 0
+
+            local styleObject = viewBar:FindFirstChild("Style")
             styleObject.Visible = styled
             styleObject.Shadow.Visible = style == true or style == "Shadow"
             styleObject.Shine.Visible = style == true or style == "Shine"
 
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(1, x, 0, y2)
-            view.Position = self.Parent.Class == "Groupbox" and U2n(0, 7, compact and 0.5 or 0.275, 0) or U2n(0, 15, compact and 0.5 or 0.3, 0)
-            view.Bar.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-            view.Bar.Fill.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-            view.Bar.UIStroke.Enabled = not window.Options.NoStrokes
+            view.Position = ispgb and U2n(0, 7, compact and 0.5 or 0.275, 0) or U2n(0, 15, compact and 0.5 or 0.3, 0)
+            viewBar.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+            viewBarFill.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+            viewBar.UIStroke.Enabled = not woptions.NoStrokes
 
-            local x = self.Options.Value == -inf and 0 or self.Options.Value == inf and 1 or clamp((self.Options.Value - self.Options.Min) / (self.Options.Max - self.Options.Min), 0, 1)
+            local x = options.Value == -inf and 0 or options.Value == inf and 1 or clamp((options.Value - options.Min) / (options.Max - options.Min), 0, 1)
             if x ~= x then
                 x = 0
             end
 
-            tweenOnce(view.Bar.Fill, TIn(max(0.25 / handleAnimationSpeed(getWindow(self).AnimationSpeed), 0.05), Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = U2s(x, 0) })
+            tweenOnce(viewBarFill, TIn(max(0.25 / handleAnimationSpeed(getWindow(self).AnimationSpeed), 0.05), Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = U2s(x, 0) })
         end
     },
     TextBox = {
@@ -7532,6 +7587,7 @@ local basicObjects = {
             Instant = false, -- when true, it will always call the Callback when text changes
             ValueUsesPlaceholder = false, -- when true, if text == "", it will use placeholder text instead
             Tooltip = "",
+            DisabledTooltip = "",
             PlaceholderText = "Type here...", -- supports Rich Text
             Value = "",
             Disabled = false,
@@ -7612,11 +7668,6 @@ local basicObjects = {
                 end
 
                 instance.View.BarInvisible.RichText = #new == 0
-
-                local old = instance.View.Bar.CursorPosition
-                instance.View.Bar.CursorPosition -= 1
-                instance.View.Bar.CursorPosition += 1
-                instance.View.Bar.CursorPosition = old
                 instance.View.BarInvisible.Text = (#new == 0 and object.Options.PlaceholderText or new):sub(0, 199999)
                 object:Refresh(true)
 
@@ -7644,45 +7695,60 @@ local basicObjects = {
             self.Instance.View.Bar:CaptureFocus()
         end,
         Refresh = function(self, dontSetText)
-            local y = self.Parent.Class == "Groupbox" and 40 or 50
-            local y2 = self.Parent.Class == "Groupbox" and 14 or 16
-            local x = self.Parent.Class == "Groupbox" and -14 or -30
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
+            local y = ispgb and 40 or 50
+            local y2 = ispgb and 14 or 16
+            local x = ispgb and -14 or -30
+
+            local options = self.Options
 
             local window = getWindow(self)
             local inst = self.Instance
             local view = inst.View
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            view.Label.TextColor3 = window.Theme.Text
-            view.Bar.BackgroundColor3 = window.Theme.Stroke
-            view.Bar.PlaceholderColor3 = window.Theme.Text
-            view.Bar.TextColor3 = window.Theme.Text
-            view.Bar.Placeholder.TextColor3 = window.Theme.Text
-            view.Bar.UIStroke.Color = window.Theme.Stroke
-            orderUpdate(inst, self.Options.Order)
+            local woptions = window.Options
 
-            inst.Visible = self.Options.Visible
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
-            view.Bar.PlaceholderText = ""
-            view.Label.Text = translate(self, "Text")
-            view.Bar.MultiLine = self.Options.MultiLine
-            view.Bar.TextEditable = not self.Options.Disabled
-            view.Bar.TextTransparency = self.Options.Disabled and (view.Bar.Text == "" and 0.85 or 0.65) or view.Bar.Text == "" and 0.45 or 0
-            view.Label.TextTransparency = self.Options.Disabled and 0.35 or 0
-            view.Bar.Placeholder.Text = translate(self, "PlaceholderText"):sub(1, 199999)
-            view.Bar.Placeholder.Visible = view.Bar.Text == ""
-            view.Bar.Placeholder.RichText = true
-            view.Bar.RichText = false
-            view.Bar.Placeholder.TextTransparency = view.Bar.TextTransparency
-            view.Bar.Size = U2n(1, 0, 0, view.BarInvisible.TextBounds.Y + 2)
-            inst.Size = U2n(1, 0, 0, (y - 14) + view.Bar.Size.Y.Offset)
+            local theme = window.Theme
+            local themeT = theme.Text
+            local themeS = theme.Stroke
+            
+            local viewLabel = view.Label
+            local viewBar = view.Bar
+            local vbph = viewBar.Placeholder
+            local vuis = viewBar.UIStroke
+            
+            inst.Separator.BackgroundColor3 = themeT
+            viewLabel.TextColor3 = themeT
+            viewBar.BackgroundColor3 = themeS
+            viewBar.PlaceholderColor3 = themeT
+            viewBar.TextColor3 = themeT
+            vbph.TextColor3 = themeT
+            vuis.Color = themeS
+            orderUpdate(inst, options.Order)
+
+            inst.Visible = options.Visible
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+            viewBar.PlaceholderText = ""
+            viewLabel.Text = translate(self, "Text")
+            viewBar.MultiLine = options.MultiLine
+            viewBar.TextEditable = not options.Disabled
+            viewBar.TextTransparency = options.Disabled and (viewBar.Text == "" and 0.85 or 0.65) or viewBar.Text == "" and 0.45 or 0
+            viewLabel.TextTransparency = options.Disabled and 0.35 or 0
+            vbph.Text = translate(self, "PlaceholderText"):sub(1, 199999)
+            vbph.Visible = viewBar.Text == ""
+            vbph.RichText = true
+            viewBar.RichText = false
+            vbph.TextTransparency = viewBar.TextTransparency
+            viewBar.Size = U2n(1, 0, 0, view.BarInvisible.TextBounds.Y + 2)
+            inst.Size = U2n(1, 0, 0, (y - 14) + viewBar.Size.Y.Offset)
             view.Size = U2n(1, x, 0, y2)
-            view.Position = self.Parent.Class == "Groupbox" and U2n(0, 7, 0, 1) or U2n(0, 15, 0, 8)
+            view.Position = ispgb and U2n(0, 7, 0, 1) or U2n(0, 15, 0, 8)
             view.AnchorPoint = V2n(0, 0)
-            view.Bar.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-            view.Bar.UIStroke.Enabled = not window.Options.NoStrokes
+            viewBar.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+            vuis.Enabled = not woptions.NoStrokes
 
             if not dontSetText then
-                view.Bar.Text = self.Options.Value
+                viewBar.Text = options.Value
             end
         end
     },
@@ -7728,20 +7794,24 @@ local basicObjects = {
             return object
         end,
         Refresh = function(self)
-            local y = self.Parent.Class == "Groupbox" and 14 or 16
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
+            local y = ispgb and 14 or 16
 
             local window = getWindow(self)
             local inst = self.Instance
 
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            inst.Label.TextColor3 = window.Theme.Text
+            local themeT = window.Theme.Text
+            
+            inst.Separator.BackgroundColor3 = themeT
+            inst.Label.TextColor3 = themeT
             inst.Label.TextSize = y
 
             orderUpdate(inst, self.Options.Order)
             inst.Visible = self.Options.Visible
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
             inst.Label.Text = translate(self, "Text"):sub(0, 199999)
-            inst.Label.Position = self.Parent.Class == "Groupbox" and U2o(9, 5) or U2o(15, 12)
+            inst.Label.Position = ispgb and U2o(9, 5) or U2o(15, 12)
         end
     },
     Header = {
@@ -7781,18 +7851,21 @@ local basicObjects = {
         Refresh = function(self)
             local window = getWindow(self)
             local inst = self.Instance
+            local options = self.Options
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
 
             inst.Separator.BackgroundColor3 = window.Theme.Text
             inst.View.Left.BackgroundColor3 = window.Theme.Text
             inst.View.Right.BackgroundColor3 = window.Theme.Text
             inst.View.Label.TextColor3 = window.Theme.Text
-            inst.View.Left.Visible = self.Options.ShowStart
+            inst.View.Left.Visible = options.ShowStart
 
-            orderUpdate(inst, self.Options.Order)
-            inst.Visible = self.Options.Visible
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
+            orderUpdate(inst, options.Order)
+            inst.Visible = options.Visible
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
             inst.View.Label.Text = translate(self, "Text"):sub(0, 199999)
-            inst.View.Label.Position = self.Parent.Class == "Groupbox" and U2o(9, 5) or U2o(15, 12)
+            inst.View.Label.Position = ispgb and U2o(9, 5) or U2o(15, 12)
         end
     },
     Separator = {
@@ -7811,14 +7884,18 @@ local basicObjects = {
         end,
         Refresh = function(self)
             local inst = self.Instance
-            local window = getWindow(self)
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            inst.SeparatorMiddle.BackgroundColor3 = window.Theme.Text
+            local options = self.Options
+            local parnt = self.Parent
+            
+            local themeT = getWindow(self).Theme.Text
+            
+            inst.Separator.BackgroundColor3 = themeT
+            inst.SeparatorMiddle.BackgroundColor3 = themeT
 
-            inst.Visible = self.Options.Visible
-            orderUpdate(inst, self.Options.Order)
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
-            inst.SeparatorMiddle.Visible = not self.Options.Invisible
+            inst.Visible = options.Visible
+            orderUpdate(inst, options.Order)
+            safeReparent(inst, parnt.Class == "Groupbox" and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+            inst.SeparatorMiddle.Visible = not options.Invisible
             inst.Size = U2n(1, 0, 0, 10)
         end
     },
@@ -7832,6 +7909,7 @@ local basicObjects = {
             Disabled = false,
             CheckBox = false,
             Tooltip = "",
+            DisabledTooltip = "",
             Order = false,
             Translations = tfreeze({ })
         },
@@ -7898,50 +7976,70 @@ local basicObjects = {
             self:Toggle()
         end,
         Refresh = function(self)
-            local y = self.Parent.Class == "Groupbox" and 25 or 40
-            local y2 = self.Parent.Class == "Groupbox" and 14 or 16
-            local x = self.Parent.Class == "Groupbox" and 7 or 15
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
+
+            local y = ispgb and 25 or 40
+            local y2 = ispgb and 14 or 16
+            local x = ispgb and 7 or 15
 
             local inst = self.Instance
             local view = inst.View
+            local options = self.Options
 
-            inst.Visible = self.Options.Visible
-            orderUpdate(inst, self.Options.Order)
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
-            view.Label.Text = translate(self, "Text")
-            view.Label.TextTransparency = self.Options.Disabled and 0.35 or 0
-            view.Icon[self.Options.CheckBox and "BackgroundTransparency" or "ImageTransparency"] = 1
+            inst.Visible = options.Visible
+            orderUpdate(inst, options.Order)
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+
+            local label = view.Label
+            local vicon = view.Icon
+            local iconFrame = vicon.Frame
+            local frState = iconFrame.State
+            local uic = iconFrame.UICorner
+            local uis = iconFrame.UIStroke
+
+            label.Text = translate(self, "Text")
+            label.TextTransparency = options.Disabled and 0.35 or 0
+            vicon[options.CheckBox and "BackgroundTransparency" or "ImageTransparency"] = 1
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(100, 0, 0, y2)
             view.Position = U2n(0, x, 0.5, 0)
-            view.Icon.Size = self.Parent.Class == "Groupbox" and U2s(1, 1) or U2s(1.2, 1.2)
+            vicon.Size = ispgb and U2s(1, 1) or U2s(1.2, 1.2)
 
             local window = getWindow(self)
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            view.Label.TextColor3 = window.Theme.Text
-            view.Icon.ImageColor3 = window.Theme.Main
-            view.Icon.BackgroundColor3 = window.Theme.Main
-            view.Icon.UIStroke.Color = window.Theme.Stroke
-            view.Icon.Frame.State.BackgroundColor3 = window.Theme.Text:Lerp(window.Theme.Main, 0.67 --[[omg another 67]]):Lerp(window.Theme.Stroke, self.Options.Disabled and 0.5 or 0)
-            view.Icon.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
+            local woptions = window.Options
             
-            local strokes = not window.Options.NoStrokes
-            local isModern = not strokes or window.Options.ModernToggles and not self.Options.CheckBox
-            view.Icon.UIStroke.Enabled = not isModern and strokes
-            view.Icon.Frame.Visible = isModern
-            view.Icon.UIAspectRatioConstraint.AspectRatio = not isModern and 0.975 or (self.Parent.Class == "Groupbox" or window.Options.LargeModernToggles) and 1.7 or 1.3
-            view.Icon.Frame.UICorner.CornerRadius = Un(window.Options.RoundEverything and 1 or 0, 0)
-            view.Icon.Frame.State.UICorner.CornerRadius = view.Icon.Frame.UICorner.CornerRadius
-            view.Icon.Frame.UIStroke.Enabled = strokes
-            view.Icon.Frame.UIStroke.Color = window.Theme.Stroke
+            local theme = window.Theme
+            local themeS = theme.Stroke
+            local themeT = theme.Text
+            local themeM = theme.Main
+            
+            inst.Separator.BackgroundColor3 = themeT
+            label.TextColor3 = themeT
+            vicon.ImageColor3 = themeM
+            vicon.BackgroundColor3 = themeM
+            vicon.UIStroke.Color = themeS
+            frState.BackgroundColor3 = themeT:Lerp(themeM, 0.67 --[[omg another 67]]):Lerp(themeS, options.Disabled and 0.5 or 0)
+            vicon.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
 
-            tweenOnce(view.Icon.Frame, TIn(0.3 / handleAnimationSpeed(getWindow(self).AnimationSpeed)), { BackgroundColor3 = (self.Options.Value and window.Theme.Main or window.Theme.Stroke):Lerp(window.Theme.Stroke, self.Options.Disabled and 0.5 or 0) })
-            tweenOnce(view.Icon.Frame.State, TIn(0.3 / handleAnimationSpeed(getWindow(self).AnimationSpeed)), { Position = U2s(self.Options.Value and 1 or 0), AnchorPoint = V2n(self.Options.Value and 1 or 0, 0) })
+            local strokes = not woptions.NoStrokes
+            local isModern = not strokes or woptions.ModernToggles and not options.CheckBox
+            vicon.UIStroke.Enabled = not isModern and strokes
+            iconFrame.Visible = isModern
+            vicon.UIAspectRatioConstraint.AspectRatio = not isModern and 0.975 or (ispgb or woptions.LargeModernToggles) and 1.7 or 1.3
+            uic.CornerRadius = Un(woptions.RoundEverything and 1 or 0, 0)
+            frState.UICorner.CornerRadius = uic.CornerRadius
+            uis.Enabled = strokes
+            uis.Color = themeS
+            
+            local as = 0.3 / handleAnimationSpeed(window.AnimationSpeed)
+            tweenOnce(iconFrame, TIn(as), { BackgroundColor3 = (options.Value and themeM or themeS):Lerp(themeS, options.Disabled and 0.5 or 0) })
+            tweenOnce(frState, TIn(as), { Position = U2s(options.Value and 1 or 0), AnchorPoint = V2n(options.Value and 1 or 0, 0) })
 
             if not isModern then
-                tweenOnce(view.Icon, TIn(0.3 / handleAnimationSpeed(getWindow(self).AnimationSpeed)), { [self.Options.CheckBox and "BackgroundTransparency" or "ImageTransparency"] = 1, [self.Options.CheckBox and "ImageTransparency" or "BackgroundTransparency"] = not self.Options.Disabled and (self.Options.Value and 0 or 1) or self.Options.Value and 0.75 or 1 })
+                tweenOnce(vicon, TIn(as), { [options.CheckBox and "BackgroundTransparency" or "ImageTransparency"] = 1, [options.CheckBox and "ImageTransparency" or "BackgroundTransparency"] = not options.Disabled and (options.Value and 0 or 1) or options.Value and 0.75 or 1 })
             else
-                tweenOnce(view.Icon, TIn(0.01), { ImageTransparency = 1, BackgroundTransparency = 1 })
+                tweenOnce(vicon, TIn(0.01), { ImageTransparency = 1, BackgroundTransparency = 1 })
             end
         end
     },
@@ -7957,6 +8055,8 @@ local basicObjects = {
             Order = false,
 
             Tooltip = "",
+            DisabledTooltip = "",
+
             Translations = tfreeze({ })
         },
         Set = function(self, value)
@@ -8040,33 +8140,46 @@ local basicObjects = {
             self:Refresh()
         end,
         Refresh = function(self)
-            local y = self.Parent.Class == "Groupbox" and 25 or 40
-            local y2 = self.Parent.Class == "Groupbox" and 14 or 16
-            local x = self.Parent.Class == "Groupbox" and 7 or 15
+            local parnt = self.Parent
+            local ispgb = parnt.Class == "Groupbox"
+            local options = self.Options
+
+            local y = ispgb and 25 or 40
+            local y2 = ispgb and 14 or 16
+            local x = ispgb and 7 or 15
 
             local window = getWindow(self)
+            local woptions = window.Options
+            
             local inst = self.Instance
             local view = inst.View
+            local viewLabel = view.Label
+            local viewDisplay = view.Display
+            local vuis = viewDisplay.UIStroke
 
-            orderUpdate(inst, self.Options.Order)
-            inst.Visible = self.Options.Visible and window.IsDesktop
-            safeReparent(inst, self.Parent.Class == "Groupbox" and self.Parent.Holder.Holder.Contents or self.Parent.Holder.NormalZone)
-            view.Label.Text = translate(self, "Text")
-            view.Label.TextTransparency = self.Options.Disabled and 0.35 or 0
-            view.Display.TextTransparency = self.Options.Disabled and 0.35 or 0
+            orderUpdate(inst, options.Order)
+            inst.Visible = options.Visible and window.IsDesktop
+            safeReparent(inst, ispgb and parnt.Holder.Holder.Contents or parnt.Holder.NormalZone)
+            viewLabel.Text = translate(self, "Text")
+            viewLabel.TextTransparency = options.Disabled and 0.35 or 0
+            viewDisplay.TextTransparency = options.Disabled and 0.35 or 0
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(100, 0, 0, y2)
             view.Position = U2n(0, x, 0.5, 0)
+            
+            local theme = window.Theme
+            local themeT = theme.Text
+            local themeS = theme.Stroke
 
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            view.Label.TextColor3 = window.Theme.Text
-            view.Display.TextColor3 = window.Theme.Main
-            view.Display.UIStroke.Color = window.Theme.Stroke
-            view.Display.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-            view.Display.UIStroke.Enabled = not window.Options.NoStrokes
-            view.Display.BackgroundColor3 = window.Theme.Stroke
+            inst.Separator.BackgroundColor3 = themeT
+            viewLabel.TextColor3 = themeT
+            viewDisplay.TextColor3 = theme.Main
+            vuis.Color = themeS
+            viewDisplay.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+            vuis.Enabled = not woptions.NoStrokes
+            viewDisplay.BackgroundColor3 = themeS
 
-            local v = self.Options.Value
+            local v = options.Value
             if typeof(v) == "EnumItem" then
                 v = v.Value
             elseif tonumber(v) then
@@ -8077,11 +8190,11 @@ local basicObjects = {
                 v = false
             end
 
-            self.Options.Value = v
+            options.Value = v
             if inputting == self then
-                view.Display.Text = "..."
+                viewDisplay.Text = "..."
             else
-                view.Display.Text = (not self.Options.Value or not Enum.KeyCode:FromValue(self.Options.Value)) and "None" or gsubInput(Enum.KeyCode:FromValue(self.Options.Value).Name)
+                viewDisplay.Text = (not options.Value or not Enum.KeyCode:FromValue(options.Value)) and "None" or gsubInput(Enum.KeyCode:FromValue(options.Value).Name)
             end
         end
     }
@@ -8149,33 +8262,44 @@ local groupBoxFuncs = {
     Refresh = function(self)
         local window = getWindow(self)
         local holder = self.Holder.Holder
-        holder.BackgroundColor3 = window.Theme.Text
-        holder.UIStroke.Color = window.Theme.Stroke
-        holder.Contents.BackgroundColor3 = window.Theme.Stroke
+        local options = self.Options
+        local woptions = window.Options
+        local theme = window.Theme
+        local themeT = theme.Text
+        local themeS = theme.Stroke
+        
+        local hp = holder.Parent
+        local hc = holder.Contents
+        local huis = holder.UIStroke
+        local ht = holder.Title
+
+        holder.BackgroundColor3 = themeT
+        huis.Color = themeS
+        hc.BackgroundColor3 = themeS
         holder.Frame.BackgroundColor3 = window.Theme.Main
-        holder.Title.TextColor3 = window.Theme.Text
-        holder.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-        holder.Contents.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-        holder.UIStroke.Enabled = not window.Options.NoStrokes
+        ht.TextColor3 = themeT
+        holder.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        hc.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        huis.Enabled = not woptions.NoStrokes
 
         local texttt = translate(self, "Text")
         local textVisible = clean(texttt) ~= ""
 
-        holder.Title.Text = texttt
-        safeReparent(holder.Parent, self.Parent.Holder.GroupboxZone[self.Options.Side .. "GroupboxZone"])
-        orderUpdate(holder.Parent, self.Options.Order)
+        ht.Text = texttt
+        safeReparent(hp, self.Parent.Holder.GroupboxZone[options.Side .. "GroupboxZone"])
+        orderUpdate(hp, options.Order)
 
         local ySize = 0
-        for i, v in holder.Contents:GetChildren() do
+        for i, v in hc:GetChildren() do
             if v:IsA("GuiObject") and v.Visible then
                 ySize += v.AbsoluteSize.Y
             end
         end
 
-        holder.Contents.Position = U2n(0.5, 0, 0, textVisible and 20 or 7)
-        holder.Contents.Size = U2n(1, -10, 1, textVisible and -25 or -10)
-        holder.Parent.Size = U2n(1, 0, 0, ySize ~= 0 and (textVisible and 35 or 20) + ySize or 0)
-        holder.Parent.Visible = self.Options.Visible and ySize ~= 0
+        hc.Position = U2n(0.5, 0, 0, textVisible and 20 or 7)
+        hc.Size = U2n(1, -10, 1, textVisible and -25 or -10)
+        hp.Size = U2n(1, 0, 0, ySize ~= 0 and (textVisible and 35 or 20) + ySize or 0)
+        hp.Visible = options.Visible and ySize ~= 0
     end
 }
 
@@ -8215,6 +8339,7 @@ local tabFuncs = {
         Text = "Tab",
         Visible = true,
         Tooltip = "",
+        DisabledTooltip = "",
         RecolorIcon = true,
         Translations = tfreeze({ }),
         Order = 0,
@@ -8299,11 +8424,11 @@ local tabFuncs = {
         cons[#cons + 1] = tab.GroupboxZone.LeftGroupboxZone.ChildRemoved:Connect(gbc2)
         cons[#cons + 1] = tab.GroupboxZone.RightGroupboxZone.ChildAdded:Connect(gbc)
         cons[#cons + 1] = tab.GroupboxZone.RightGroupboxZone.ChildRemoved:Connect(gbc2)
-        
+
         local cnt = 0
         cons[#cons + 1] = rs.RenderStepped:Connect(function()
             cnt = (cnt + 1) % 5
-            
+
             if cnt == 0 then
                 tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
             end
@@ -8345,27 +8470,34 @@ local tabFuncs = {
         local bi = tb.ButtonItself
         local holder = self.Holder
         local class = self.Class
+        local parnt = self.Parent
+        local prox = self.Proxy
 
         local ls = "LibrarySettings" .. window.Flag
         if options.Flag:sub(1, #ls) ~= ls then
-            safeReparent(tb, self.Parent.Window.RealWindow.Contents.Display.PageButtons.List)
-            safeReparent(holder, self.Parent.Window.RealWindow.Contents.Display.Pages)
+            local pwrcd = parnt.Window.RealWindow.Contents.Display
+            safeReparent(tb, pwrcd.PageButtons.List)
+            safeReparent(holder, pwrcd.Pages)
         end
 
-        setIcon(options.Icon, icons, self.Proxy, bi.Icon)
+        setIcon(options.Icon, icons, prox, bi.Icon)
         bi.Title.Text = translate(self, "Text")
         bi.Visible = options.Visible
+        
+        local theme = window.Theme
+        local themeM = theme.Main
+        local themeT = theme.Text
 
-        tb.BackgroundColor3 = window.Theme.Main
-        tb.Indicator.BackgroundColor3 = window.Theme.Main
-        tb.Filler.BackgroundColor3 = window.Theme.Text
-        setIcon(options.Image, backgrounds, self.Proxy, tb.ImageLabel)
+        tb.BackgroundColor3 = themeM
+        tb.Indicator.BackgroundColor3 = themeM
+        tb.Filler.BackgroundColor3 = themeT
+        setIcon(options.Image, backgrounds, prox, tb.ImageLabel)
         orderUpdate(tb, tonumber(options.Order) or 0)
-        bi.Icon.ImageColor3 = self.Options.RecolorIcon and window.Theme.Text or C3n(1, 1, 1)
-        bi.Title.TextColor3 = window.Theme.Text
+        bi.Icon.ImageColor3 = options.RecolorIcon and themeT or C3n(1, 1, 1)
+        bi.Title.TextColor3 = themeT
 
         if class == "Tab" then
-            holder.ScrollBarImageColor3 = window.Theme.Main
+            holder.ScrollBarImageColor3 = themeM
 
             local ySize = 0
             for i, v in holder.NormalZone:GetChildren() do
@@ -8379,25 +8511,26 @@ local tabFuncs = {
             local leftYSize = 0
             local rightYSize = 0
 
-            for i, v in holder.GroupboxZone.LeftGroupboxZone:GetChildren() do
+            local gbz = holder.GroupboxZone
+            for i, v in gbz.LeftGroupboxZone:GetChildren() do
                 if v:IsA("GuiObject") and v.Visible then
                     leftYSize += v.AbsoluteSize.Y
                 end
             end
 
-            for i, v in holder.GroupboxZone.RightGroupboxZone:GetChildren() do
+            for i, v in gbz.RightGroupboxZone:GetChildren() do
                 if v:IsA("GuiObject") and v.Visible then
                     rightYSize += v.AbsoluteSize.Y
                 end
             end
 
-            holder.GroupboxZone.Size = U2n(1, 0, 0, max(leftYSize, rightYSize))
+            gbz.Size = U2n(1, 0, 0, max(leftYSize, rightYSize))
         end
 
-        if not options.Visible and self.Parent.CurrentTab and self.Parent.CurrentTab.Proxy == self.Proxy then
-            self.Parent.CurrentTab.Holder.Visible = false
-            self.Parent.Self.CurrentTab = false
-        elseif options.Visible and self.Parent.CurrentTab and self.Proxy == self.Parent.CurrentTab.Proxy and not dont then
+        if not options.Visible and parnt.CurrentTab and parnt.CurrentTab.Proxy == prox then
+            parnt.CurrentTab.Holder.Visible = false
+            parnt.Self.CurrentTab = false
+        elseif options.Visible and parnt.CurrentTab and prox == parnt.CurrentTab.Proxy and not dont then
             return self:SwitchTo(true)
         end
 
@@ -8641,7 +8774,7 @@ local floatingLabel = {
     _Rescale = function(self)
         local l = self.Label
         if not l or not l:FindFirstChild("Contents") then return end
-        
+
         local l1, l2 = l.Contents.Contents.Text, l.Contents.Contents.Title
         local t1, t2 = l1.TextBounds, l2.TextBounds
         local hasIcon = setIcon(self.Options.Icon, icons, self, l2.ImageLabel) ~= ""
@@ -8672,30 +8805,43 @@ local floatingLabel = {
         if not window or window.Closed then return end
 
         local l = self.Label
-        safeReparent(l, gui.FloatingLabels)
-        l.AnchorPoint = self.Options.AnchorPoint
-        l.Visible = self.Options.Visible and (#l.Contents.Contents.Text.Text ~= 0 or #l.Contents.Contents.Title.Text ~= 0)
+        local options = self.Options
 
-        if self.Options._position ~= self.Options.Position then
-            self.Options._position = self.Options.Position
-            l.Position = self.Options.Position
+        safeReparent(l, gui.FloatingLabels)
+        
+        local lc = l.Contents
+        local lcc = lc.Contents
+        local lcct = lcc.Title
+        local lcct2 = lcc.Text
+        
+        l.AnchorPoint = options.AnchorPoint
+        l.Visible = options.Visible and (#lcct2.Text ~= 0 or #lcct.Text ~= 0)
+
+        local op = options.Position
+        if options._position ~= op then
+            options._position = op
+            l.Position = op
         end
 
-        if self.Options._text ~= self.Options.Text or self.Options._title ~= self.Options.Title or self.Options._icon ~= self.Options.Icon then
-            self.Options._text, self.Options._title, self.Options._icon = self.Options.Text, self.Options.Title, self.Options.Icon
+        if options._text ~= options.Text or options._title ~= options.Title or options._icon ~= options.Icon then
+            options._text, options._title, options._icon = options.Text, options.Title, options.Icon
 
-            l.Contents.Contents.Text.Text = self.Options.Text:sub(1, 199999)
-            l.Contents.Contents.Title.Text = self.Options.Title:sub(1, 199999)
+            lcct2.Text = options.Text:sub(1, 199999)
+            lcct.Text = options.Title:sub(1, 199999)
             self:_Rescale()
         end
+        
+        local theme = window.Theme
+        local themeT = theme.Text
+        local woptions = window.Options
 
-        l.Contents.BackgroundColor3 = window.Theme.Back
-        l.Contents.OutsideStroke.Color = window.Theme.Stroke
-        l.Contents.Contents.Title.TextColor3 = window.Theme.Text
-        l.Contents.Contents.Text.TextColor3 = window.Theme.Text
-        l.Contents.TopNeon.BackgroundColor3 = window.Theme.Main
-        l.Contents.UICorner.CornerRadius = cornerState[window.Options.RoundEverything]
-        l.Contents.OutsideStroke.Enabled = not window.Options.NoStrokes
+        lc.BackgroundColor3 = theme.Back
+        lc.OutsideStroke.Color = theme.Stroke
+        lcct.TextColor3 = themeT
+        lcct2.TextColor3 = themeT
+        lc.TopNeon.BackgroundColor3 = theme.Main
+        lc.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        lc.OutsideStroke.Enabled = not woptions.NoStrokes
     end
 }
 
@@ -8705,7 +8851,7 @@ local tabHeaderFuncs = {
         Visible = true,
         Order = false,
         Translations = tfreeze({ }),
-        ShowStart = true,
+        ShowStart = true
     },
     Init = function(self, options)
         local instance = getPlaceholder("TabHeader")
@@ -8734,19 +8880,24 @@ local tabHeaderFuncs = {
         return object
     end,
     Refresh = function(self)
-        local window = getWindow(self)
         local inst = self.Instance
+        local options = self.Options
+        
+        local themeT = getWindow(self).Theme.Text
+        local view = inst.View
+        local left = view.Left
+        local label = view.Label
 
-        inst.Separator.BackgroundColor3 = window.Theme.Text
-        inst.View.Left.BackgroundColor3 = window.Theme.Text
-        inst.View.Right.BackgroundColor3 = window.Theme.Text
-        inst.View.Label.TextColor3 = window.Theme.Text
-        inst.View.Left.Visible = self.Options.ShowStart
+        inst.Separator.BackgroundColor3 = themeT
+        left.BackgroundColor3 = themeT
+        view.Right.BackgroundColor3 = themeT
+        label.TextColor3 = themeT
+        left.Visible = options.ShowStart
 
-        orderUpdate(inst, self.Options.Order)
-        inst.Visible = self.Options.Visible
+        orderUpdate(inst, options.Order)
+        inst.Visible = options.Visible
         safeReparent(inst, self.Parent.Window.RealWindow.Contents.Display.PageButtons.List)
-        inst.View.Label.Text = translate(self, "Text"):sub(0, 199999)
+        label.Text = translate(self, "Text"):sub(0, 199999)
     end
 }
 
@@ -8767,13 +8918,18 @@ local tabSeparatorFuncs = {
     Refresh = function(self)
         local inst = self.Instance
         local window = getWindow(self)
-        inst.Separator.BackgroundColor3 = window.Theme.Text
-        inst.SeparatorMiddle.BackgroundColor3 = window.Theme.Text
+        local options = self.Options
 
-        inst.Visible = self.Options.Visible
-        orderUpdate(inst, self.Options.Order)
+        local spm = inst.SeparatorMiddle
+        local themeT = window.Theme.Text
+
+        inst.Separator.BackgroundColor3 = themeT
+        spm.BackgroundColor3 = themeT
+
+        inst.Visible = options.Visible
+        orderUpdate(inst, options.Order)
         safeReparent(inst, self.Parent.Window.RealWindow.Contents.Display.PageButtons.List)
-        inst.SeparatorMiddle.Visible = not self.Options.Invisible
+        spm.Visible = not options.Invisible
         inst.Size = U2n(1, 0, 0, 10)
     end
 }
@@ -8931,18 +9087,19 @@ local windowFuncs; windowFuncs = {
         getCfg = getCfg or self.GetConfig
         cfg = cfg or { Type = 0 }
 
+        local options = self.Options
         local cl = self.Class
-        local fl = self.Options.Flag
+        local fl = options.Flag
 
         if cl == "FloatingLabel" or cl == "Separator" or cl == "Header" then return end
 
         if cl == "ColorPicker" then
-            if self.Options.NoConfigs then return end
-            return tonumber(self.Options.Value:ToHex(), 16)
+            if options.NoConfigs then return end
+            return tonumber(options.Value:ToHex(), 16)
         end
 
         if cl == "Keybind" then
-            return self.Options.Value or -1 -- bypass NoConfigs, because you can set keybind to anything
+            return options.Value or -1 -- bypass NoConfigs, because you can set keybind to anything
         end
 
         if cl == "Button" or cl == "Label" then
@@ -8962,11 +9119,11 @@ local windowFuncs; windowFuncs = {
             end
 
             local c = count(pickers)
-            local nc = self.Options.NoConfigs
+            local nc = options.NoConfigs
 
             if c == 0 and nc then return end
 
-            local value = cl == "Toggle" and (self.Options.Value and 1 or 0) or self.Options.Value
+            local value = cl == "Toggle" and (options.Value and 1 or 0) or options.Value
             return c ~= 0 and not nc and {
                 Value = value,
                 ColorPickers = pickers
@@ -8976,8 +9133,8 @@ local windowFuncs; windowFuncs = {
         end
 
         if cl == "Dropdown" or cl == "Slider" or cl == "TextBox" or cl == "CustomTab" then
-            if self.Options.NoConfigs then return end
-            return self.Options.Value
+            if options.NoConfigs then return end
+            return options.Value
         end
 
         if cl == "Window" or cl == "Tab" or cl == "Groupbox" then
@@ -8997,13 +9154,14 @@ local windowFuncs; windowFuncs = {
         local window = getWindow(self) or cl == "Window" and self
         if self == window and cfg.Type ~= 0 then window:Notification({ Title = "Config", Text = "The given config is not a config (most likely a theme!)" }) return false end
 
-        local fl = self.Options.Flag
+        local options = self.Options
+        local fl = options.Flag
         if cfg == nil or cl == "FloatingLabel" or cl == "Separator" or cl == "Header" then return end
 
         if cl == "ColorPicker" then
-            if self.Options.NoConfigs then return end
+            if options.NoConfigs then return end
             local newCol = C3h(string["for" .. "mat"]("%06x", cfg)) -- suspend studio warning
-            if self.Options.Value == newCol then return end
+            if options.Value == newCol then return end
 
             return self:Set(newCol)
         end
@@ -9013,12 +9171,12 @@ local windowFuncs; windowFuncs = {
         end
 
         if cl == "CustomTab" then
-            if self.Options.NoConfigs then return end
+            if options.NoConfigs then return end
             return self:Set(cfg)
         end
 
         if cl == "Dropdown" then
-            if self.Options.NoConfigs or tEqual(self.Options.Value, cfg) then return end
+            if options.NoConfigs or tEqual(options.Value, cfg) then return end
             return self:Set(cfg)
         end
 
@@ -9050,14 +9208,14 @@ local windowFuncs; windowFuncs = {
                 local b = typeof(cfg.Value) == "boolean"
                 local value = b and cfg or not b and isToggle and cfg.Value == 1 or not isToggle and cfg.Value
 
-                if self.Options.NoConfigs or self.Options.Value == value then return end
+                if options.NoConfigs or options.Value == value then return end
                 self:Set(value)
             end
         else
             local b = typeof(cfg) == "boolean"
             local value = b and cfg or not b and isToggle and cfg == 1 or not isToggle and cfg
 
-            if self.Options.NoConfigs or self.Options.Value == value then return end
+            if options.NoConfigs or options.Value == value then return end
             self:Set(value)
         end
 
@@ -9109,17 +9267,18 @@ local windowFuncs; windowFuncs = {
         cp.Visible = true
 
         local cons = { }
-        
+
         local first = true
         local function applyTheme()
             if options.KeepTheme and not first then return end
             first = false
-            
+
+            local options = self.Options
             cp.Contents.BackgroundColor3 = self.Theme.Back
             cp.Contents.TopNeon.BackgroundColor3 = self.Theme.Main
             cp.Contents.OutsideStroke.Color = self.Theme.Stroke
-            cp.Contents.OutsideStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
+            cp.Contents.OutsideStroke.Enabled = not options.NoStrokes
+            cp.Contents.UICorner.CornerRadius = cornerState[options.RoundEverything]
             cp.Contents.Contents.TopbarZone.Title.TextColor3 = self.Theme.Text
             cp.Contents.Contents.TopbarZone.Right.Close.ImageLabel.ImageColor3 = self.Theme.Text
             cp.Contents.Contents.Display.ColorZone.HUEZone.UIStroke.Color = self.Theme.Stroke
@@ -9130,21 +9289,21 @@ local windowFuncs; windowFuncs = {
             cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor.UIStroke.Color = self.Theme.Stroke
             cp.Contents.Contents.Display.ColorZone.Preview.UIStroke.Color = self.Theme.Stroke
             cp.Contents.Contents.TopbarZone.Title.Text = options.Text or "Color Picker"
-            cp.Contents.Contents.Display.ColorZone.Preview.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.ColorZone.HUEZone.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.BottomZone.TextButton.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.R.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.G.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.B.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
+            cp.Contents.Contents.Display.ColorZone.Preview.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.ColorZone.HUEZone.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.BottomZone.TextButton.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.R.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.G.UICorner.CornerRadius = cornerState[options.RoundEverything]
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.B.UICorner.CornerRadius = cornerState[options.RoundEverything]
 
-            cp.Contents.Contents.Display.ColorZone.Preview.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.ColorZone.HUEZone.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.BottomZone.TextButton.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.R.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.G.UIStroke.Enabled = not self.Options.NoStrokes
-            cp.Contents.Contents.Display.BottomZone.TextBoxes.B.UIStroke.Enabled = not self.Options.NoStrokes
+            cp.Contents.Contents.Display.ColorZone.Preview.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.ColorZone.HUEZone.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.BottomZone.TextButton.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.R.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.G.UIStroke.Enabled = not options.NoStrokes
+            cp.Contents.Contents.Display.BottomZone.TextBoxes.B.UIStroke.Enabled = not options.NoStrokes
 
             for i, v in cp.Contents.Contents.Display.BottomZone.TextBoxes:GetChildren() do
                 if v:IsA("TextButton") then
@@ -9164,7 +9323,9 @@ local windowFuncs; windowFuncs = {
         applyTheme()
 
         cp.Size = U2o(50, 50)
-        tweenOnce(cp, TIn(1 / handleAnimationSpeed(self.Options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = U2s(0.8, 0.8) })
+
+        local options = self.Options
+        tweenOnce(cp, TIn(1 / handleAnimationSpeed(options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = U2s(0.8, 0.8) })
 
         local HSV = { }
         HSV.H, HSV.S, HSV.V = options.Value:ToHSV()
@@ -9195,7 +9356,7 @@ local windowFuncs; windowFuncs = {
 
             local old = uis.MouseIconEnabled
             uis.MouseIconEnabled = false
-            tweenOnce(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor, TIn(0.35 / handleAnimationSpeed(self.Options.AnimationSpeed)), { Size = U2n(1, 2, 0, 5), BackgroundTransparency = 0 })
+            tweenOnce(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor, TIn(0.35 / handleAnimationSpeed(options.AnimationSpeed)), { Size = U2n(1, 2, 0, 5), BackgroundTransparency = 0 })
 
             while HDragging and con1.Connected do
                 HSV.H = clamp((mouse.Y - cp.Contents.Contents.Display.ColorZone.HUEZone.AbsolutePosition.Y) / cp.Contents.Contents.Display.ColorZone.HUEZone.AbsoluteSize.Y, 0, 1)
@@ -9207,7 +9368,7 @@ local windowFuncs; windowFuncs = {
 
             tooltipObject.CustomMousePosition = mouse
             uis.MouseIconEnabled = old
-            tweenOnce(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor, TIn(0.5 / handleAnimationSpeed(self.Options.AnimationSpeed)), { Size = U2n(1, 2, 0, 2), BackgroundTransparency = 0.25 })
+            tweenOnce(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor, TIn(0.5 / handleAnimationSpeed(options.AnimationSpeed)), { Size = U2n(1, 2, 0, 2), BackgroundTransparency = 0.25 })
 
             wait(render())
             self.Tooltip = ""
@@ -9225,7 +9386,7 @@ local windowFuncs; windowFuncs = {
 
             local old = uis.MouseIconEnabled
             uis.MouseIconEnabled = false
-            tweenOnce(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor, TIn(0.35 / handleAnimationSpeed(self.Options.AnimationSpeed)), { Size = U2o(7, 7), BackgroundTransparency = 0 })
+            tweenOnce(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor, TIn(0.35 / handleAnimationSpeed(options.AnimationSpeed)), { Size = U2o(7, 7), BackgroundTransparency = 0 })
 
             while VSDragging and con2 do
                 HSV.S = clamp((mouse.X - cp.Contents.Contents.Display.ColorZone.PickerZone.AbsolutePosition.X) / cp.Contents.Contents.Display.ColorZone.PickerZone.AbsoluteSize.X, 0, 1)
@@ -9238,7 +9399,7 @@ local windowFuncs; windowFuncs = {
 
             tooltipObject.CustomMousePosition = mouse
             uis.MouseIconEnabled = old
-            tweenOnce(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor, TIn(0.5 / handleAnimationSpeed(self.Options.AnimationSpeed)), { Size = U2o(5, 5), BackgroundTransparency = 0.25 })
+            tweenOnce(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor, TIn(0.5 / handleAnimationSpeed(options.AnimationSpeed)), { Size = U2o(5, 5), BackgroundTransparency = 0.25 })
 
             wait(render())
             self.Tooltip = ""
@@ -9306,8 +9467,8 @@ local windowFuncs; windowFuncs = {
 
         spawn(options.Callback, result)
         spawn(function()
-            tweenOnce(cp, TIn(0.5 / handleAnimationSpeed(self.Options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = U2o(0, 0) })
-            wait(0.5 / handleAnimationSpeed(self.Options.AnimationSpeed))
+            tweenOnce(cp, TIn(0.5 / handleAnimationSpeed(options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = U2o(0, 0) })
+            wait(0.5 / handleAnimationSpeed(options.AnimationSpeed))
 
             cp:Destroy()
         end)
@@ -9336,12 +9497,14 @@ local windowFuncs; windowFuncs = {
             options.Duration = clamp(options.Duration, 2, 120)
         end
 
+        local opts = self.Options
+
         if options.Side == "-" then
-            options.Side = self.Options.NotificationSide or "Left"
+            options.Side = opts.NotificationSide or "Left"
         end
 
         if options.UseOgScaling == "-" then
-            options.UseOgScaling = self.Options.NotificationOgScaling or false
+            options.UseOgScaling = opts.NotificationOgScaling or false
         end
 
         local s = options.Side
@@ -9379,10 +9542,10 @@ local windowFuncs; windowFuncs = {
         notif.Background.Progress.Fill.Position = U2s(s == "Left" and 0 or 1, 0)
         notif.Background.Holder.Buttons.Visible = options.HasButtons
         notif.Background.Holder.Halfer.Position = U2s(s == "Left" and 0 or 0.5, 0)
-        notif.Background.OutsideStroke.Enabled = not self.Options.NoStrokes
-        notif.Background.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-        notif.Background.Holder.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
-        notif.Background.Progress.CanvasGroup.Half2.UICorner.CornerRadius = cornerState[self.Options.RoundEverything]
+        notif.Background.OutsideStroke.Enabled = not opts.NoStrokes
+        notif.Background.UICorner.CornerRadius = cornerState[opts.RoundEverything]
+        notif.Background.Holder.UICorner.CornerRadius = cornerState[opts.RoundEverything]
+        notif.Background.Progress.CanvasGroup.Half2.UICorner.CornerRadius = cornerState[opts.RoundEverything]
         safeReparent(notif.Background.Progress.CanvasGroup.Half2.UICorner, notif.Background.Progress.CanvasGroup["Half" .. (s == "Left" and "2" or "1")])
         notif.Background.Progress.CanvasGroup.Half2.Position = U2s(s == "Left" and 0 or 0.5, 0)
         notif.Background.Progress.CanvasGroup.Half2.Size = U2s(s == "Left" and 1 or 0.5, 1)
@@ -9549,6 +9712,7 @@ local windowFuncs; windowFuncs = {
             Objects = { },
             AllObjects = { },
             ObjectAdded = event.new(),
+            OnRefresh = event.new(),
             Defaults = { },
             Counters = { },
             PossibleLanguages = { "EN" },
@@ -9685,7 +9849,7 @@ local windowFuncs; windowFuncs = {
         local dontRefresh = false
         cons[#cons + 1] = object.ThemeChanged:Connect(function()
             if dontRefresh then return end
-            
+
             dontRefresh = true
             object.Proxy:RefreshAll()
             dontRefresh = false
@@ -9694,10 +9858,10 @@ local windowFuncs; windowFuncs = {
         local shOpen = false
         local msf = window.RealWindow.Contents.Display.PageButtons.List.MobileSizeFix
         local cnt = 0
-        
+
         cons[#cons + 1] = rs.RenderStepped:Connect(function()
             cnt = (cnt + 1) % 5
-            
+
             if cnt == 0 then
                 msf.Size = U2n(mrandom(), 0, 0, 1)
             end
@@ -9709,7 +9873,7 @@ local windowFuncs; windowFuncs = {
                     break
                 end
             end
-            
+
             if not object.Options.UnlockMouse and not shOpen or not object.Options.Visible then return end
             unlockMouse()
         end)
@@ -9835,7 +9999,7 @@ local windowFuncs; windowFuncs = {
             end
 
             tinsert(buffer, fps)
-            
+
             cnt = (cnt + 1) % 5
             if not label.Visible or cnt ~= 0 then return end
 
@@ -9921,7 +10085,7 @@ local windowFuncs; windowFuncs = {
                 object:RefreshUserProfile()
             end
         end)
-            
+
         return object
     end,
     RefreshUserProfile = function(self)
@@ -9951,13 +10115,15 @@ local windowFuncs; windowFuncs = {
         window.RealWindow.Contents.Display.PageButtons.UserProfile.User.TextLabel.Text = text
     end,
     Refresh = function(self)
+        local options = self.Options
         if self.Options.Closed then return end
 
-        if table.isfrozen(self.Options.Theme) then
-            self.Options.Theme = tclone(self.Options.Theme)
+        self.OnRefresh:Fire()
+
+        if table.isfrozen(options.Theme) then
+            options.Theme = tclone(options.Theme)
         end
 
-        local options = self.Options
         local title = translate(self, "Text")
         if #title == 0 then
             title = translate(self, "Title")
@@ -10005,7 +10171,7 @@ local windowFuncs; windowFuncs = {
         pageButtons.Filler.BackgroundColor3 = options.Theme.Text
         pageButtons.UserProfile.User.TextLabel.TextColor3 = options.Theme.Text
 
-        if self.Options._OldVisible then
+        if options._OldVisible then
             if options.ShadowTransparency ~= options._OldShadowTransparency or options.BackgroundTransparency ~= options._OldBackgroundTransparency then
                 options._OldShadowTransparency = options.ShadowTransparency
                 options._OldBackgroundTransparency = options.BackgroundTransparency
@@ -10084,13 +10250,13 @@ local windowFuncs; windowFuncs = {
             realWindow.InsideStroke.Enabled = false
         end
 
-        self.Options.Language = self.Options.Language:sub(1, 2):upper()
+        options.Language = options.Language:sub(1, 2):upper()
         self:RefreshUserProfile()
 
-        local generatedString = tostring(self.Options.NoStrokes) .. tostring(self.Options.ModernToggles) .. tostring(self.Options.RoundEverything) .. tostring(options.LargeModernToggles)
-        if self.Options._PrevLang ~= self.Options.Language or self.Options._LargeString ~= generatedString then
-            self.Options._PrevLang = self.Options.Language
-            self.Options._LargeString = generatedString
+        local generatedString = tostring(options.NoStrokes) .. tostring(options.ModernToggles) .. tostring(options.RoundEverything) .. tostring(options.LargeModernToggles)
+        if options._PrevLang ~= options.Language or options._LargeString ~= generatedString then
+            options._PrevLang = options.Language
+            options._LargeString = generatedString
             self:RefreshAll()
         end
 
@@ -10103,8 +10269,8 @@ local windowFuncs; windowFuncs = {
         end
 
         window.Blur.Visible = not options.DisableBlurBackground and options.BlurBackground and options.Visible
-        if self.Options._OldVisible ~= options.Visible and not options.Debounce and options._Ready then
-            self.Options._OldVisible = options.Visible
+        if options._OldVisible ~= options.Visible and not options.Debounce and options._Ready then
+            options._OldVisible = options.Visible
             if options.Visible then
                 self:Show()
             else
@@ -10241,7 +10407,7 @@ local windowFuncs; windowFuncs = {
 
         local kb = self.Options.Keybind
         local mb = device == "Mobile" or self.Options.MobileButtonAlwaysVisible or self.Options.MobileButtonVisible
-        
+
         if not self.Options.Keybind and not mb and not self.Options.Closed then
             if not self.Options.ToggleKeyObject or not self.Options.ToggleKeyObject.ColorPickers[0] or not self.Options.ToggleKeyObject.ColorPickers[0].Value then
                 self.Options.Visible = true
@@ -10346,7 +10512,8 @@ tooltipObject = newObject({
     DefaultOptions = {
         Text = "",
         Window = false,
-        CustomMousePosition = mouse
+        CustomMousePosition = mouse,
+        Dark = false
     },
 
     Init = function(self, options)
@@ -10382,31 +10549,32 @@ tooltipObject = newObject({
     end,
 
     Refresh = function(self)
-        local cap : string = self.Options.Text
+        local options = self.Options
+        local cap : string = options.Text
         local tt = self.Tooltip
         tt.Visible = #cap ~= 0
         tt.TextLabelInvisible.Text = cap:sub(0, 199999)
         safeReparent(tt, gui)
 
-        self.Options.CustomMousePosition = self.Options.CustomMousePosition or mouse
+        options.CustomMousePosition = options.CustomMousePosition or mouse
 
         local safe = 25
         local tooltipSize = tt.AbsoluteSize
         local screenSize = gui.AbsoluteSize
-        local mousePos = V2n(self.Options.CustomMousePosition.X, self.Options.CustomMousePosition.Y)
+        local mousePos = V2n(options.CustomMousePosition.X, options.CustomMousePosition.Y)
         local targetPos = mousePos + V2n(15, 50)
 
         tt.Position = U2o(clamp(targetPos.X, safe, screenSize.X - tooltipSize.X - safe), clamp(targetPos.Y, safe + tooltipSize.Y, screenSize.Y - tooltipSize.Y - safe))
         tt.TextLabelInvisible.Size = U2o(floor(gui.AbsoluteSize.X / 2.5), 10000)
 
-        local theme = (self.Options.Window or coreWindow)
+        local theme = (options.Window or coreWindow)
         if theme then
             theme = theme.Theme
         end
 
         if not theme then return end
 
-        tt.BackgroundColor3 = theme.Back
+        tt.BackgroundColor3 = theme.Back:Lerp(theme.Stroke, options.Dark and 0.35 or 0)
         tt.OutsideStroke.Color = theme.Stroke
         tt.TextLabel.TextColor3 = theme.Text
     end
@@ -10467,40 +10635,41 @@ library = newObject({
     end,
 
     Refresh = function(self)
-        self._CoreWindow.Theme = self.Options.Theme
+        local options = self.Options
+        self._CoreWindow.Theme = options.Theme
 
-        local tt = self.Options.Tooltip
+        local tt = options.Tooltip
 
         if tt ~= "" then
             tooltipObject.Options.Window = self
             tooltipObject.Options.Text = tt
             tooltipObject:Refresh()
 
-            self.Options.Tooltip = ""
+            options.Tooltip = ""
         end
     end,
 
     Window = function(self, ...)
         self:Refresh()
-        
+
         local window = newObject(windowFuncs, nil, ...)
         tinsert(self.Windows, window)
-        
+
         self.WindowAdded:Fire(window)
         window.Destroying:Once(function()
             tremove(self.Windows, tfind(self.Windows, window))
             self.WindowRemoved:Fire(window)
         end)
-        
+
         repeat render() until window.Options.ExecutionTimes -- function
 
         window._Ready = true
-        
+
         local ts = window.ThemeString
         if ts ~= "" then
             window:SetThemeString(ts)
         end
-        
+
         return window
     end,
 
@@ -10511,7 +10680,7 @@ library = newObject({
     Notify = function(self, ...)
         return self:Notification(...)
     end,
-    
+
     DecodeShareString = function(self, str)
         local s, e = pcall(_decodeThingy, str)
         return s and e or false
@@ -10536,7 +10705,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.1.95",
+    Version = "5.2.0",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
