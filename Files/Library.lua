@@ -6402,7 +6402,7 @@ local function hoverLogic(object, instance)
         render()
 
         local tt = object.Options.Disabled and translate(object, "DisabledTooltip")
-        if not tt or #tt == 0 then tt = translate(object, "Tooltip") end
+        if #tt == 0 then tt = translate(object, "Tooltip") end
 
         tooltipObject.Options.Window = window
         tooltipObject.Options.Dark = object.Options.Disabled
@@ -6658,30 +6658,30 @@ local colorPickerBase = {
         self:Refresh()
         spawn(self.Options.Callback, color, self)
     end,
-	Refresh = function(self)
-		local window = getWindow(self)
-		local sinst = self.Instance
-		local inst = sinst.Display
-		local options = self.Options
-		local woptions = window.Options
+    Refresh = function(self)
+        local window = getWindow(self)
+        local sinst = self.Instance
+        local inst = sinst.Display
+        local options = self.Options
+        local woptions = window.Options
 
-		inst.BackgroundColor3 = options.Value
-		inst.UIStroke.Color = window.Theme.Stroke
-		inst.Darker.Visible = options.Disabled
-		inst.Parent.Visible = options.Visible
-		inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
-		inst.UIStroke.Enabled = not woptions.NoStrokes
-		orderUpdate(inst, options.Order)
+        inst.BackgroundColor3 = options.Value
+        inst.UIStroke.Color = window.Theme.Stroke
+        inst.Darker.Visible = options.Disabled
+        inst.Parent.Visible = options.Visible
+        inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
+        inst.UIStroke.Enabled = not woptions.NoStrokes
+        orderUpdate(inst, options.Order)
 
-		local parent = self.Parent
-		if not parent then return end
+        local parent = self.Parent
+        if not parent then return end
 
-		local instance = parent.Instance
-		local pickers = instance:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
+        local instance = parent.Instance
+        local pickers = instance:FindFirstChild("ColorPickers") or getPlaceholder("ColorPickers")
 
-		safeReparent(pickers, instance)
-		safeReparent(sinst, pickers)
-	end
+        safeReparent(pickers, instance)
+        safeReparent(sinst, pickers)
+    end
 }
 
 acp = function(...)
@@ -9282,7 +9282,8 @@ local windowFuncs; windowFuncs = {
         return label
     end,
     ColorPicker = function(self, options)
-        options = setmetatable(options or { }, defaultColorPickerOptions)
+        local opts = setmetatable(options or { }, defaultColorPickerOptions)
+        local options = self.Options
 
         local cp = getPlaceholder("ColorPickerWindow")
         safeReparent(cp, gui.Holder.ColorPickerWindows)
@@ -9346,11 +9347,10 @@ local windowFuncs; windowFuncs = {
 
         cp.Size = U2o(50, 50)
 
-        local options = self.Options
         tweenOnce(cp, TIn(1 / handleAnimationSpeed(options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = U2s(0.8, 0.8) })
 
         local HSV = { }
-        HSV.H, HSV.S, HSV.V = options.Value:ToHSV()
+        HSV.H, HSV.S, HSV.V = opts.Value:ToHSV()
 
         local fHSV = Color3.fromHSV
         local function updateColor()
@@ -9487,7 +9487,7 @@ local windowFuncs; windowFuncs = {
             end
         end
 
-        spawn(options.Callback, result)
+        spawn(opts.Callback, result)
         spawn(function()
             tweenOnce(cp, TIn(0.5 / handleAnimationSpeed(options.AnimationSpeed), Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = U2o(0, 0) })
             wait(0.5 / handleAnimationSpeed(options.AnimationSpeed))
