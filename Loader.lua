@@ -14,7 +14,7 @@
 
 ---
 
-local GITHUB = "https://api.github.com/repos/Its-Kawi/"
+local githubUSER = "Its-Kawi"
 local http = game:GetService("HttpService")
 local sg = game:GetService("StarterGui")
 
@@ -41,7 +41,7 @@ local function httpGet(url)
 end
 
 local function getLastCommitID()
-	return http:JSONDecode(httpGet("Fire-Library/commits?path=Files%2FLibrary%2Elua", true))[1].sha
+	return http:JSONDecode(httpGet("https://raw.githubusercontent.com/" .. githubUSER .. "/Fire-Library/commits?path=Files%2FLibrary%2Elua", true))[1].sha
 end
 
 local function fix(str)
@@ -78,7 +78,7 @@ if success then
 end
 
 local function update()
-	local contents = httpGet(GITHUB .. "Fire-Library/refs/heads/main/Files/Library.lua", true)
+	local contents = httpGet("https://api.github.com/repos/" .. githubUSER .. "/Fire-Library/refs/heads/main/Files/Library.lua", true)
 	local local1 = contents:find("local", 1, true)
 	if not local1 then return false, "Invalid request return" end
 
