@@ -4051,7 +4051,6 @@ return lib
 local tfind = table.find
 local game = game
 local workspace = workspace
-local getfenv = getfenv
 local typeof = typeof
 local newproxy = newproxy
 local tostring = tostring
@@ -4109,6 +4108,28 @@ local C3n = Color3.new
 local C3R = Color3.fromRGB
 local V2n = Vector2.new
 local TIn = TweenInfo.new
+local pack = table.pack
+
+local function memoize(fn)
+    local cache = setmetatable({ }, { __mode = "k" })
+
+    return function(...)
+        local args = pack(...)
+        local key = args.n ~= 0 and concat(args, "\0") or ""
+
+        local result = cache[key]
+        if result then
+            return unpack(result, 1, result.n)
+        end
+
+        result = pack(fn(...))
+        cache[key] = result
+
+        return unpack(result, 1, result.n)
+    end
+end
+
+U2s, U2n, U2o, Un, C3R = memoize(U2s), memoize(U2n), memoize(U2o), memoize(Un), memoize(C3R)
 
 local rs = game:GetService("RunService")
 local function render(times)
