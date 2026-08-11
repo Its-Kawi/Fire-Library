@@ -6401,7 +6401,7 @@ local function hoverLogic(object, instance)
 
         render()
 
-        local tt = object.Options.Disabled and translate(object, "Tooltip")
+        local tt = object.Options.Disabled and translate(object, "DisabledTooltip")
         if not tt or #tt == 0 then tt = translate(object, "Tooltip") end
 
         tooltipObject.Options.Window = window
