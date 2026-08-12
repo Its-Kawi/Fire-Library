@@ -372,11 +372,10 @@ do -- Set properties
     objects["Instance0"]["Parent"] = parent;
     objects["Instance0"]["IgnoreGuiInset"] = true;
     objects["Instance0"]["ClipToDeviceSafeArea"] = false;
-    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["Name"] = "FireLibV5";
     objects["Instance0"]["DisplayOrder"] = 2147483647;
+    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["ScreenInsets"] = Enum.ScreenInsets.DeviceSafeInsets;
-    objects["Instance0"]["Enabled"] = false;
     objects["Instance0"]["SafeAreaCompatibility"] = Enum.SafeAreaCompatibility.None;
     objects["Instance0"]["ResetOnSpawn"] = false;
 
@@ -3716,7 +3715,7 @@ return {
         local script = objects["Instance12"];
 local pack, concat = table.pack, table.concat
 local function memoize(fn)
-    local cache = setmetatable({ }, { __mode = "k" })
+    --[[local cache = setmetatable({ }, { __mode = "k" })
 
     return function(...)
         local args = pack(...)
@@ -3731,7 +3730,9 @@ local function memoize(fn)
         cache[key] = result
 
         return unpack(result, 1, result.n)
-    end
+    end]]
+    
+    return fn
 end
 
 local Inew = Instance.new
@@ -4111,7 +4112,7 @@ local TIn = TweenInfo.new
 local pack = table.pack
 
 local function memoize(fn)
-    local cache = setmetatable({ }, { __mode = "k" })
+    --[[local cache = setmetatable({ }, { __mode = "k" })
 
     return function(...)
         local args = pack(...)
@@ -4126,7 +4127,8 @@ local function memoize(fn)
         cache[key] = result
 
         return unpack(result, 1, result.n)
-    end
+    end]]
+    return fn
 end
 
 U2s, U2n, U2o, Un, C3R = memoize(U2s), memoize(U2n), memoize(U2o), memoize(Un), memoize(C3R)
