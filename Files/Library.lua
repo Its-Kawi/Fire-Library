@@ -4397,7 +4397,7 @@ local ping do
             spawn(function()
                 while wait() do
                     disconnected = disconnected or plr:GetNetworkPing() < 0
-                    ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing / 1.2)
+                    ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing / 1.35)
 
                     if disconnected then break end
                 end
