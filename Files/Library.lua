@@ -802,10 +802,10 @@ do -- Set properties
     objects["Instance53"]["ScaleType"] = Enum.ScaleType.Crop;
     objects["Instance53"]["ImageTransparency"] = 0.875;
     objects["Instance53"]["Parent"] = objects["Instance43"];
-    objects["Instance53"]["Image"] = "rbxassetid://103841351698732";
+    objects["Instance53"]["Image"] = "rbxassetid://139437521";
     objects["Instance53"]["BackgroundTransparency"] = 1;
     objects["Instance53"]["BorderColor3"] = Color3.new(0, 0, 0);
-    objects["Instance53"]["ImageContent"] = Content.fromUri("rbxassetid://103841351698732");
+    objects["Instance53"]["ImageContent"] = Content.fromUri("rbxassetid://139437521");
     objects["Instance53"]["Size"] = UDim2.new(1, 0, 1, 0);
     objects["Instance53"]["BorderSizePixel"] = 0;
     objects["Instance53"]["BackgroundColor3"] = Color3.new(1, 1, 1);
@@ -864,7 +864,7 @@ do -- Set properties
     objects["Instance61"]["FontSize"] = Enum.FontSize.Size18;
     objects["Instance61"]["TextColor3"] = Color3.new(1, 1, 1);
     objects["Instance61"]["BorderColor3"] = Color3.new(0, 0, 0);
-    objects["Instance61"]["Text"] = "Cherry\n<font size=\"10\" transparency=\"0.25\">NEVER</font>";
+    objects["Instance61"]["Text"] = "Kawi\n<font size=\"10\" transparency=\"0.25\">NEVER</font>";
     objects["Instance61"]["TextXAlignment"] = Enum.TextXAlignment.Left;
     objects["Instance61"]["TextSize"] = 16;
     objects["Instance61"]["Parent"] = objects["Instance58"];
@@ -2399,10 +2399,10 @@ do -- Set properties
     objects["Instance215"]["Parent"] = objects["Instance213"];
     objects["Instance215"]["BackgroundTransparency"] = 1;
     objects["Instance215"]["BorderColor3"] = Color3.new(0, 0, 0);
-    objects["Instance215"]["Image"] = "rbxassetid://103841351698732";
+    objects["Instance215"]["Image"] = "rbxassetid://4705269490";
     objects["Instance215"]["Name"] = "Icon";
     objects["Instance215"]["Size"] = UDim2.new(1, 0, 1, 0);
-    objects["Instance215"]["ImageContent"] = Content.fromUri("rbxassetid://103841351698732");
+    objects["Instance215"]["ImageContent"] = Content.fromUri("rbxassetid://4705269490");
     objects["Instance215"]["ZIndex"] = 101;
     objects["Instance215"]["BorderSizePixel"] = 0;
     objects["Instance215"]["BackgroundColor3"] = Color3.new(1, 1, 1);
@@ -2422,14 +2422,14 @@ do -- Set properties
     objects["Instance218"]["RichText"] = true;
     objects["Instance218"]["TextColor3"] = Color3.new(1, 1, 1);
     objects["Instance218"]["BorderColor3"] = Color3.new(0, 0, 0);
-    objects["Instance218"]["Text"] = "NullFire";
+    objects["Instance218"]["Text"] = "Fire Library";
     objects["Instance218"]["TextSize"] = 24;
     objects["Instance218"]["Name"] = "Title";
     objects["Instance218"]["Parent"] = objects["Instance213"];
     objects["Instance218"]["FontFace"] = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal, false);
     objects["Instance218"]["BackgroundTransparency"] = 1;
     objects["Instance218"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-    objects["Instance218"]["Size"] = UDim2.new(0, 76, 1, 0);
+    objects["Instance218"]["Size"] = UDim2.new(0, 110, 1, 0);
     objects["Instance218"]["ZIndex"] = 101;
     objects["Instance218"]["BorderSizePixel"] = 0;
     objects["Instance218"]["BackgroundColor3"] = Color3.new(1, 1, 1);
@@ -7558,7 +7558,7 @@ local basicObjects = {
                 options.Format = functions[options.Format or ""] or functions["/"]
             end
 
-            local formattedText = options.Format and (typeof(options.Format) == "string" and options["Format"] --[[suspend studio warning]] or tostring(options.Format(options))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
+            local formattedText = options.Format and (typeof(options.Format) == "string" and options["Format"] --[[suspend studio warning]] or tostring(options.Format(self))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
 
             viewLabel.Visible = not compact
             viewBarProgress.TextXAlignment = compact and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center
@@ -10729,7 +10729,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.0",
+    Version = "5.2.1",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
