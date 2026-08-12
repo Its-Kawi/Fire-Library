@@ -4671,6 +4671,9 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
             function saveConfig(notifs)
                 if window.Closed then return end
+                
+                local old = autoSavingEnabled
+                autoSavingEnabled = nil
 
                 local name = configTextBox.Value
                 if not validateName(name) then
@@ -4687,6 +4690,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
                 wf(route, window:GetConfigString(), true)
                 configDropdown.Values = getExistingConfigs()
+                
+                if autoSavingEnabled == nil then
+                    autoSavingEnabled = old
+                end
 
                 if notifs then
                     window:Notification({ Side = "Left", Title = "Success", Text = "Config '" .. name .. "' has been saved!" })
@@ -4828,7 +4835,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     configString:Set(window:GetConfigString())
                     changed = false
 
-                    if autoSavingEnabled and autoSaveConfig.Value then
+                    if autoSavingEnabled and autoSaveConfig.Value and not window.Closed then
                         defer(saveConfig, debugAutoSave)
                     end
                 end
@@ -10592,9 +10599,10 @@ local windowFuncs; windowFuncs = {
     end,
     Close = function(self)
         if self.Options.Closed then return end
+        
+        self.Options.Closed = true
         self.Destroying:Fire()
 
-        self.Options.Closed = true
         self.Options.Debounce = false
         self.MobileButton:Destroy()
         uiBlur:Unbind(self.BlurFrame)
