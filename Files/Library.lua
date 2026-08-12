@@ -4293,7 +4293,7 @@ local gsubInput, playSound
 local plrs = game:GetService("Players")
 local plr = plrs.LocalPlayer or plrs.PlayerAdded:Wait()
 
-local safeReparent, ping do
+local safeReparent do
     local reparentQueue = { }
     local function flushQueue(object, queue)
         if #queue == 0 then
@@ -4320,32 +4320,9 @@ local safeReparent, ping do
             flushQueue(a, myQueue)
         end
     end
-    
-    local disconnected = false
-    local pingTE = tick()
-    local prevPing = plr:GetNetworkPing()
-    local pingChangeTime = prevPing * 10
-    ping = prevPing
 
     event.Clock:Connect(function(delta, skip)
         if skip then return end
-        
-        if not disconnected then
-            local cping = plr:GetNetworkPing()
-            if cping ~= prevPing then
-                local ct = tick()
-                
-                prevPing = cping
-                pingChangeTime = (ct - pingTE) * 1.5
-                pingTE = ct
-
-                if cping < 0 then
-                    disconnected = true
-                end
-            end
-        end
-
-        ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing)
 
         for object, queue in reparentQueue do
             flushQueue(object, queue)
@@ -4353,44 +4330,86 @@ local safeReparent, ping do
     end)
 end
 
-local CPUSpeed, RealCPUSpeed, CPUPrefix = 0, 0, "Hz"
-spawn(function()
-    local function CPU_measureGHz(cycles)
-        local gHZ = 0
-        cycles = cycles or 100
+local ping do
+    spawn(function()
+        repeat wait() until game:IsLoaded()
 
-        for i = 1, cycles do
-            local start = tick()
-            for i = 1, 1000 do end
+        local rrs = game:GetService("RobloxReplicatedStorage")
 
-            gHZ += 0.000001 / ((tick() - start) / 14)
-            
-            if i ~= cycles then
-                wait()
+        local disconnected = false
+        local prevPing = plr:GetNetworkPing()
+        local pingChangeTime = prevPing * 10
+        
+        ping = prevPing
+
+        local ev = rrs and rrs:WaitForChild("GetServerVersion", prevPing + 1)
+        local pingTE = tick()
+
+        if not ev then
+            while true do
+                if not disconnected then
+                    local cping = plr:GetNetworkPing()
+                    if cping ~= prevPing then
+                        local ct = tick()
+
+                        prevPing = cping
+                        pingChangeTime = (ct - pingTE) * 10
+                        pingTE = ct
+
+                        if cping < 0 then
+                            disconnected = true
+                        end
+                    end
+                end
+
+                ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing)
+            end
+        else
+            spawn(function()
+                while wait() do
+                    ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing)
+
+                    if disconnected then
+                        break
+                    end
+                end
+            end)
+
+            while true do
+                local start = tick()
+                ev:InvokeServer()
+
+                local ct = tick()
+
+                pingChangeTime = (ct - pingTE) * 2
+                prevPing = ct - start
+                pingTE = ct
             end
         end
+    end)
+end
 
-        return gHZ / cycles
-    end
-    
-    CPUSpeed = CPU_measureGHz(1)
-    RealCPUSpeed = CPUSpeed
-    
-    CPUPrefix = "GHz"
-    if CPUSpeed < 1 then
-        CPUSpeed *= 1000
-        CPUPrefix = "MHz"
-    end
-    
-    while wait(0.1) do
-        local CPUBuff = 0
-        
-        local times = 10
-        for i = 1, times do
-            CPUBuff += CPU_measureGHz()
+local CPUSpeed, RealCPUSpeed, CPUPrefix = 0, 0, "Hz" do
+    spawn(function()
+        local function CPU_measureGHz(cycles)
+            local gHZ = 0
+            cycles = cycles or 100
+
+            for i = 1, cycles do
+                local start = tick()
+                for i = 1, 1000 do end
+
+                gHZ += 0.000001 / ((tick() - start) / 14)
+                
+                if i ~= cycles then
+                    wait()
+                end
+            end
+
+            return gHZ / cycles
         end
         
-        CPUSpeed = CPUBuff / times
+        CPUSpeed = CPU_measureGHz(1)
         RealCPUSpeed = CPUSpeed
         
         CPUPrefix = "GHz"
@@ -4398,8 +4417,26 @@ spawn(function()
             CPUSpeed *= 1000
             CPUPrefix = "MHz"
         end
-    end
-end)
+        
+        while wait(0.1) do
+            local CPUBuff = 0
+            
+            local times = 10
+            for i = 1, times do
+                CPUBuff += CPU_measureGHz()
+            end
+            
+            CPUSpeed = CPUBuff / times
+            RealCPUSpeed = CPUSpeed
+            
+            CPUPrefix = "GHz"
+            if CPUSpeed < 1 then
+                CPUSpeed *= 1000
+                CPUPrefix = "MHz"
+            end
+        end
+    end)
+end
 
 local function readTimes(path)
     local times = rf and rf(path, false)
@@ -10806,7 +10843,7 @@ return library
         local script = objects["Instance6"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.2",
+    Version = "5.2.21",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
