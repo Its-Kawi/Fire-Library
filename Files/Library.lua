@@ -7558,7 +7558,7 @@ local basicObjects = {
                 options.Format = functions[options.Format or ""] or functions["/"]
             end
 
-            local formattedText = options.Format and (typeof(options.Format) == "string" and options["Format"] --[[suspend studio warning]] or tostring(options.Format(self))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
+            local formattedText = options.Format and (typeof(options.Format) == "string" and options["Format"] --[[suspend studio warning]] or tostring(options.Format(options))) or fixNum(self.Value) .. " / " .. fixNum(self.Max)
 
             viewLabel.Visible = not compact
             viewBarProgress.TextXAlignment = compact and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center
