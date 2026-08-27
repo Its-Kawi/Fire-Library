@@ -11252,38 +11252,35 @@ task.spawn(function() -- HANDLE CURSORS
         return true
     end
 
-    local prevEnabled = uis.MouseIconEnabled
-    local targetEnabled = prevEnabled
-    local prevState = prevEnabled
-    local ignore = false
+	local old = uis.MouseIconEnabled
 
-    uis:GetPropertyChangedSignal("MouseIconEnabled"):Connect(function()
-        local state = uis.MouseIconEnabled
-        if state ~= prevState then
-            prevState = state
-            
-            if state ~= prevEnabled then
-                prevEnabled = state
-            end
-        end
-    end)
+	local set = false
+	local set2 = false
+	
+	local function cycle()
+		local success = refreshCursor()
+		local targetEnabled = not success and old or success and false
 
-    local set = false
-    local function cycle()
-        local success = refreshCursor()
-        targetEnabled = not success and prevEnabled or success and false
+		if not targetEnabled then
+			set = false
+			
+			if not set2 then
+				set2 = false
+				old = uis.MouseIconEnabled
+				uis.MouseIconEnabled = targetEnabled
+			end
+		else
+			set2 = false
+			
+			if not set then
+				set = true
+				uis.MouseIconEnabled = old
+			end
+		end
+	end
 
-        if not targetEnabled then
-            set = false
-            uis.MouseIconEnabled = targetEnabled
-        elseif not set then
-            set = true
-            uis.MouseIconEnabled = targetEnabled
-        end
-    end
-
-    game:GetService("RunService").PreRender:Connect(cycle)
-    -- while wait(1) do cycle() end
+	game:GetService("RunService").PreRender:Connect(cycle)
+	-- while wait(1) do cycle() end
 end)
 
 global[key] = cursorLib
