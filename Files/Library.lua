@@ -11257,6 +11257,15 @@ task.spawn(function() -- HANDLE CURSORS
 	local set = false
 	local set2 = false
 	
+	uis:GetPropertyChangedSignal("MouseIconEnabled"):Connect(function()
+		if not set2 then return end
+		
+		if uis.MouseIconEnabled then
+			old = true
+			uis.MouseIconEnabled = false
+		end
+	end)
+	
 	local function cycle()
 		local success = refreshCursor()
 		local targetEnabled = not success and old or success and false
