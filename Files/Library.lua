@@ -11265,7 +11265,7 @@ task.spawn(function() -- HANDLE CURSORS
 			set = false
 			
 			if not set2 then
-				set2 = false
+				set2 = true
 				old = uis.MouseIconEnabled
 				uis.MouseIconEnabled = targetEnabled
 			end
