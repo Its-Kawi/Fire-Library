@@ -10583,7 +10583,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.43",
+    Version = "5.2.44",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
@@ -11276,8 +11276,9 @@ task.spawn(function() -- HANDLE CURSORS
 			if not set2 then
 				set2 = true
 				old = uis.MouseIconEnabled
-				uis.MouseIconEnabled = targetEnabled
 			end
+			
+			uis.MouseIconEnabled = false
 		else
 			set2 = false
 			
