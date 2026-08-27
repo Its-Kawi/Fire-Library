@@ -10583,7 +10583,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.4",
+    Version = "5.2.43",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
