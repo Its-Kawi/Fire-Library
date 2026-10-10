@@ -5526,10 +5526,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 Icon = "Save",
                 Callback = function()
                     if window.Closed then return end
-
+                    
                     local name = themeTextBox.Value
                     if not validateName(name) then return window:Notification({ Title = "Error", Text = "Invalid theme name. Use 1–32 characters, no \\ or /" }) end
-
+                    
                     local route = themesRoute .. name .. json
                     if IF(route) then if not window:Notification({ Side = "Left", Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true, Duration = 10 }) then return end end
 
@@ -5603,6 +5603,36 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                         wf(themeRoute, false)
                     end
                 end,
+            })
+            
+            themeManager:AddSeparator({ Invisible = true })
+
+            themeManager:AddButton({
+                Text = "Restore Default Themes",
+                Icon = "l://circle-fading-plus",
+                Callback = function(self)
+                    if window:InWindowNotification({ Title = "Restore Themes", Text = "Themes with matching names will be overwritten\nContinue?", HasButtons = true }) then
+                        self.Disabled = true
+                        
+                        local c, t = 0, 0
+                        for i, v in premadeThemes do
+                            c += 1
+                            
+                            spawn(function()
+                                wf(themesRoute .. i .. json, v, true)
+                                t += 1
+                            end)
+                        end
+                        
+                        while c == 0 or t < c or window.Closed do wait() end
+                        if not window.Closed then
+                            themeDropdown.Values = getExistingThemes()
+                            self.Disabled = false
+                            
+                            window:Notification({ Title = "Themes Restored", Text = "Successfully restored themes!" })
+                        end
+                    end
+                end
             })
         end
         
@@ -5938,25 +5968,46 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         window.ModernToggles = val
         lmt.Disabled = not rest.Value and not mt.Value
     end })
-    lmt = togglesGb:AddToggle({ Text = "Large Modern Toggles", NoConfigs = true, Value = window.Options.LargeModernToggles, Callback = function(val)
+    lmt = togglesGb:AddToggle({ Text = "Large Modern Toggles", Tooltip = "In GroupBoxes (like this one toggle here), size won't change!", NoConfigs = true, Value = window.Options.LargeModernToggles, Callback = function(val)
         window.LargeModernToggles = val
     end })
 
     lmt.Disabled = not rest.Value and not mt.Value
     
     local blursGb = settingsThemeTab:AddLeftGroupbox("BGB", { Text = "Blurs" })
-
+    
+    local bs, fbs
     local bbg = blursGb:AddToggle("BlurBackground", { Text = "Blur Behind UI", Tooltip = "<b>NOT ALWAYS WORKING</b>\nUsually high quality required for this feature to work", NoConfigs = true, Value = window.Options.BlurBackground, Callback = function(val)
         window.BlurBackground = val
+
+        bs.Disabled = not val
+        fbs.Disabled = not val
     end })
 
-    local bs = blursGb:AddSlider({ Text = "Blur Intensity", NoConfigs = true, Value = uiBackBlur.BlurSize, Callback = function(val)
+    bs = blursGb:AddSlider({ Text = "Blur Intensity", NoConfigs = true, Value = uiBackBlur.BlurSize, Callback = function(val)
         uiBackBlur.BlurSize = val
     end, Min = 0, Max = 1, Step = 0, Format = ".%" })
 
-    local fbs = blursGb:AddToggle("FullBlurSize", { Text = "Full UI-Sized Blur", NoConfigs = true, Value = window.Options.BlurBackground, Callback = function(val)
+    fbs = blursGb:AddToggle("FullBlurSize", { Text = "Full UI-Sized Blur", NoConfigs = true, Value = window.Options.BlurBackground, Callback = function(val)
         window.FullBlurSize = val
     end })
+
+    bs.Disabled = not bbg.Value
+    fbs.Disabled = not bbg.Value
+    
+    blursGb:AddSeparator()
+    
+    local bp
+    local uib = blursGb:AddToggle("UIBlur", { Text = "UI Blurring Enabled", NoConfigs = true, Value = window.Options.EnableUIBlur, Callback = function(val)
+        window.EnableUIBlur = val
+        bp.Disabled = not val
+    end })
+    
+    bp = blursGb:AddToggle("BlurProfile", { Text = "Blur Profile", Tooltip = "NOTE: Profile is visible only in some scripts, so often that feature does nothing!", NoConfigs = true, Value = window.Options.EnableUIBlur, Callback = function(val)
+        window.BlurProfile = val
+    end })
+
+    bp.Disabled = not uib.Value
 
     local backgroundImgGb = settingsThemeTab:AddRightGroupbox("BGIMG", { Text = "Background Image" })
 
@@ -6102,6 +6153,11 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         lmt.Value = window.Options.LargeModernToggles
         mbn.Value = window.Options.MobileButtonNeon
         ilear.Value = window.Options.InfoLabelExtraAntiRich
+        uib.Value = window.Options.EnableUIBlur
+        bp.Value = window.Options.BlurProfile
+        bp.Disabled = not uib.Value
+        bs.Disabled = not bbg.Value
+        fbs.Disabled = not bbg.Value
 
         for i, v in infoLabelObjs do
             if i == "ExtraInfoLabelTextEnabled" then
@@ -9137,6 +9193,7 @@ local tabFuncs = {
     Init = function(self, options)
         local tabButton = getPlaceholder("TabButton")
         local tab = getPlaceholder("Tab")
+        tab.Visible = false
 
         local object = addFunctions({
             Options = options,
@@ -9222,7 +9279,8 @@ local tabFuncs = {
         end)
 
         defer(function()
-            if not object.Parent.CurrentTab then
+            render()
+            if not object.Parent.Self.CurrentTab then
                 object.Proxy:SwitchTo()
             end
         end)
@@ -9992,7 +10050,7 @@ local windowFuncs; windowFuncs = {
     Class = "Window",
     GetTheme = function(window)
         local theme = {
-            Type = 7,
+            Type = 8,
 
             ["0"] = window.Options.ShadowSize,
             ["1"] = floor(window.Options.ShadowTransparency * 100),
@@ -10024,14 +10082,16 @@ local windowFuncs; windowFuncs = {
             ["27"] = window.Options.NoStrokes and 1 or 0,
             ["28"] = window.Options.ModernToggles and 1 or 0,
             ["29"] = window.Options.LargeModernToggles and 1 or 0,
-            ["30"] = window.Options.InfoLabelExtraAntiRich and 1 or 0
+            ["30"] = window.Options.InfoLabelExtraAntiRich and 1 or 0,
+            ["31"] = window.Options.EnableUIBlur and 1 or 0,
+            ["32"] = window.Options.BlurProfile and 1 or 0
         }
 
         return theme
     end,
     SetTheme = function(window, theme)
         local type = tonumber(theme.Type)
-        if not type or floor(type) ~= type or type > 7 or type < 1 then window:Notification({ Title = "Theme", Text = "The given theme is not a theme (most likely a config!)" }) return false end
+        if not type or floor(type) ~= type or type > 8 or type < 1 then window:Notification({ Title = "Theme", Text = "The given theme is not a theme (most likely a config!)" }) return false end
 
         if type == 1 then
             window.Options.ShadowSize = theme.ShadowSize
@@ -10128,6 +10188,14 @@ local windowFuncs; windowFuncs = {
                 window.Options.ModernToggles = false
                 window.Options.LargeModernToggles = false
                 window.Options.InfoLabelExtraAntiRich = true
+            end
+            
+            if type >= 8 then
+                window.Options.EnableUIBlur = theme["31"] == 1
+                window.Options.BlurProfile = theme["32"] == 1
+            else
+                window.Options.EnableUIBlur = true
+                window.Options.BlurProfile = false
             end
         end
 
@@ -10728,6 +10796,7 @@ local windowFuncs; windowFuncs = {
         NoStrokes = false,
         RoundEverything = false,
         EnableUIBlur = true,
+        BlurProfile = false,
         ModernToggles = false,
         LargeModernToggles = false,
         _LargeString = "",
@@ -11600,6 +11669,7 @@ local windowFuncs; windowFuncs = {
             v[2].Smooth = v[3] / handleAnimationSpeed(options.AnimationSpeed)
         end
         
+        self._Blurs.Profile[1].Enabled = options.BlurProfile
         refreshBlurs(self._Blurs, options.EnableUIBlur)
         
         local bgImage = realWindowContents.BackgroundImageBlur.Downsampler.BackgroundImage
@@ -13046,7 +13116,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.5",
+    Version = "5.2.51",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
@@ -13065,7 +13135,8 @@ return {
     ["Ketamine UI"] = "ZzZgStv0PYBAQjEAgEIZxFAma6Y50H7ICxhXEozSaJ9SabXxXi6ooQqQoit0RQH8M39uMZJ5aM4NlnMhBSc44iqL3tUqxbi1mrdQI0ZYd95QqQ1p7AIIYAirz7GGKc8Bdtih5pcX7aEStRu3icBKAhEcoqHMSlrNDILwLgtJzur1iiM4Rm8CEEpZB1NHMFZro4FLs2QqQk0wnzZs4m3fVMQlSJ",
     ["Emo 2"] = "oU7L9DmDAUPBAIeibwBgn00BYKbMBGRu9TAj9HmKBVI9mWSb7XUHF1HBIsluPJP4ZODlQkrBv2ZEMZXtdRSNiDKo4m1F8mK1mrdyMPDrzrVfuXYADBKurT3NYkAgjrR3PcYABBUctduHew0l1WeLJTioydtrRI1G5aJETgAMGlcbGAkny9mNDEjfQXiPEwDHVhpEIXxXY3HMTg31Gm7DFuUDtBUoSMQXRJ",
     ["Vampires"] = "ZzZgStv0PYoAQlFAg4K8RHwlkmOAjqbXxXUpxHlgNAIOU9ula0SNyWuS7L9XxXvQADTsmOf7gW5uroECNkUrtz7UM4plLgFSw48UTMnYqucWDVSpY1nzWjnrYAFEYxCjjEEkHO0jJRKCR4dd6cEJKwgjrRnDwhCEOw46inlDLKVq758MSxik7snGru2JphYgCoogiK7AGD5HAoFdKx0XSTYyOn12sDOJQRmSkm3HT5AlZpfOsVDDOOo2rNuQzhzQqQXA",
-    ["Menthol"] = "ZzZgStv0PYYAQBFAg0JrhGAeSaOgpsxEFQEJgxQqQDDBnsbkW3EdeqDmVGBCj25QqQVWI3AvL5MHTdxB5aYNwDHUAxNpRy9U0jrVyMPjQnXjucXxXMu6cErgHSlTfuXQAACoYazdDFGQwAETbl7ZOj2y7xYskg31uWV0WdvECYBKQhEYMzOQO0eNDISFcHmLwjrZJSYiKFGQqQMeAs3Vwoo7QqQIhHQDYOOYg7FuJCVHo6pE"
+    ["Menthol"] = "ZzZgStv0PYYAQBFAg0JrhGAeSaOgpsxEFQEJgxQqQDDBnsbkW3EdeqDmVGBCj25QqQVWI3AvL5MHTdxB5aYNwDHUAxNpRy9U0jrVyMPjQnXjucXxXMu6cErgHSlTfuXQAACoYazdDFGQwAETbl7ZOj2y7xYskg31uWV0WdvECYBKQhEYMzOQO0eNDISFcHmLwjrZJSYiKFGQqQMeAs3Vwoo7QqQIhHQDYOOYg7FuJCVHo6pE",
+    ["Privacy"] = "oU7L9DWEAUSBAITCbwBYVppDTsdVurfZdVToiJqg6Cp30SNq7npggo4CAc6a3XxXkLEpQoLeOW7Y3blZiO085qU4N1UJyI8gByNNnwLDNruXLTZz86egkCKUWYwRazt7CSOgYZzs7DWaokA5Vev0hsVCdv7dOmvzFFQkBKwpEYWZHYOlfAyX7hSmkMQqQQqQQqQNx8CBFK8WGihQAOILodPPA8CFD40sPBRjFSc1HuiMwpRJ"
 }
     end;
 
