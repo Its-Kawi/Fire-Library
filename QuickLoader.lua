@@ -23,7 +23,7 @@ end
 
 local function httpGet(url)
 	if request then
-		local result = request({ Url = url, Method = "GET", Headers = { } })
+		local result = request({ Url = url, Method = "GET" })
 		local success = result.Success or tostring(result.StatusCode):sub(1, 1) == "2"
 		return success and result.Body or "", success
 	else
@@ -33,7 +33,16 @@ local function httpGet(url)
 end
 
 local function getLastCommitID()
-	return http:JSONDecode(httpGet("https://api.github.com/repos/" .. githubUSER .. "/Fire-Library/commits?path=Files%2FLibrary%2Elua", true))[1].sha
+	local res = httpGet("https://raw.githubusercontent.com/" .. githubUSER .. "Fire-Library/commits?path=Files%2FLibrary%2Elua", true)
+	local s, r = pcall(function()
+		return http:JSONDecode(res)[1].sha
+	end)
+
+	if not s then
+		r = tostring(math.random()):sub(3)
+	end
+
+	return r
 end
 
 local function fix(str)
