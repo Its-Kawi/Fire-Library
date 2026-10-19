@@ -444,10 +444,11 @@ do -- Set properties
     objects["Instance0"]["Parent"] = parent;
     objects["Instance0"]["IgnoreGuiInset"] = true;
     objects["Instance0"]["ClipToDeviceSafeArea"] = false;
+    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["Name"] = "FireLibV5";
     objects["Instance0"]["DisplayOrder"] = 2147483646;
-    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["ScreenInsets"] = Enum.ScreenInsets.DeviceSafeInsets;
+    objects["Instance0"]["Enabled"] = false;
     objects["Instance0"]["SafeAreaCompatibility"] = Enum.SafeAreaCompatibility.None;
     objects["Instance0"]["ResetOnSpawn"] = false;
 
@@ -5273,7 +5274,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 end
 
                 local route = configsRoute .. fl .. name .. json
-                if notifs and IF(route) then if not window:Notification({ Side = "Left", Title = "Config Exists", Text = "Config '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true, Duration = 10 }) then return end end
+                if notifs and IF(route) then if not window:InWindowNotification({ Title = "Config Exists", Text = "Config '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
 
                 wf(route, window:GetConfigString(), true)
                 configDropdown.Values = getExistingConfigs()
@@ -5318,9 +5319,9 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                         return
                     end
 
-                    window:Notification({ Title = "Success", Text = "Config '" .. name .. "' has been successfully loaded!" })
+                    window:InWindowNotification({ Title = "Success", Text = "Config '" .. name .. "' has been successfully loaded!" })
                 else
-                    window:Notification({ Title = "Error", Text = "Invalid config file" })
+                    window:InWindowNotification({ Title = "Error", Text = "Invalid config file" })
                 end
 
                 autoSavingEnabled = true
@@ -5349,7 +5350,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     local route = configsRoute .. fl .. name .. json
                     if not IF(route) then return window:Notification({ Title = "Error", Text = "Config '" .. name .. "' does not exist" }) end
 
-                    if window:Notification({ Side = "Left", Title = "Delete Config", Text = "Are you sure you want to delete config '" .. name .. "'?", HasButtons = true, Duration = 10 }) then
+                    if window:InWindowNotification({ Title = "Delete Config", Text = "Are you sure you want to delete config '" .. name .. "'?", HasButtons = true }) then
                         df(route)
                         configDropdown.Values = getExistingConfigs()
 
@@ -5467,7 +5468,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     configString.Value = window:GetConfigString()
                     configString.Changed:Fire()
                     toclip(configString.Value)
-                    window:Notification({ Title = "Copied", Text = "Code copied to clipboard!" })
+                    window:InWindowNotification({ Title = "Copied", Text = "Code copied to clipboard!" })
                 end
             })
         end
@@ -5531,7 +5532,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     if not validateName(name) then return window:Notification({ Title = "Error", Text = "Invalid theme name. Use 1–32 characters, no \\ or /" }) end
                     
                     local route = themesRoute .. name .. json
-                    if IF(route) then if not window:Notification({ Side = "Left", Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true, Duration = 10 }) then return end end
+                    if IF(route) then if not window:InWindowNotification({ Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
 
                     wf(route, window:GetThemeString(), true)
                     themeDropdown.Values = getExistingThemes()
@@ -5554,9 +5555,9 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     end
 
                     cp1.Value = window.Theme.Main
-                    window:Notification({ Title = "Success", Text = "Theme '" .. name .. "' has been successfully loaded!" })
+                    window:InWindowNotification({ Title = "Success", Text = "Theme '" .. name .. "' has been successfully loaded!" })
                 else
-                    window:Notification({ Title = "Error", Text = "Invalid theme file" })
+                    window:InWindowNotification({ Title = "Error", Text = "Invalid theme file" })
                 end
             end
 
@@ -5581,7 +5582,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     local route = themesRoute .. name .. json
                     if not IF(route) then return window:Notification({ Title = "Error", Text = "Theme '" .. name .. "' does not exist" }) end
 
-                    if window:Notification({ Side = "Left", Title = "Delete Theme", Text = "Are you sure you want to delete theme '" .. name .. "'?", HasButtons = true, Duration = 10 }) then
+                    if window:InWindowNotification({ Title = "Delete Theme", Text = "Are you sure you want to delete theme '" .. name .. "'?", HasButtons = true }) then
                         df(route)
                         themeDropdown.Values = getExistingThemes()
 
@@ -5629,7 +5630,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                             themeDropdown.Values = getExistingThemes()
                             self.Disabled = false
                             
-                            window:Notification({ Title = "Themes Restored", Text = "Successfully restored themes!" })
+                            window:InWindowNotification({ Title = "Themes Restored", Text = "Successfully restored themes!" })
                         end
                     end
                 end
@@ -5662,7 +5663,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 themeString.Value = window:GetThemeString()
                 toclip(themeString.Value)
 
-                window:Notification({ Title = "Copied", Text = "Code copied to clipboard!" })
+                window:InWindowNotification({ Title = "Copied", Text = "Code copied to clipboard!" })
             end,
             Disabled = not toclip,
             DisabledTooltip = "Your executor does not support that function"
@@ -12414,9 +12415,9 @@ return function(lib)
     end
     
     local window = lib:Window({
-        Text = "Example Window",
+        Text = "Apex",
         Translations = { RU = "Окно-Пример" } + lib.Translate,
-        ThemeString = "oU7L9DGCA0KBAIAiWgBgpmOWO9xOiQc4FB6sQNhWSbXxXZRdUUfEgiJXCtjJxCeTElOkVybxK2luAJOccP1E8SI15Fl1l7ZOnDeZdt5QqQ1p7AIIYAirR3NMU4Yz5ekLRGCev7ZW9ZXcRkBKghEUVxHUO1zNDICWmg3CbSGprVBTDeDSGAUEZxC00caiMAeX1jfAmIai5wnT2E3QqQwrsGoyoE",
+        ThemeString = "ZzZgStv0PYYAQBFAg0JrhGAeSaOgpsxEFQEJgxQqQDDBnsbkW3EdeqDmVGBCj25QqQVWI3AvL5MHTdxB5aYNwDHUAxNpRy9U0jrVyMPjQnXjucXxXMu6cErgHSlTfuXQAACoYazdDFGQwAETbl7ZOj2y7xYskg31uWV0WdvECYBKQhEYMzOQO0eNDISFcHmLwjrZJSYiKFGQqQMeAs3Vwoo7QqQIhHQDYOOYg7FuJCVHo6pE",
         Keybind = Enum.KeyCode.RightShift,
         UserProfile = true,
         Language = "English" -- gonna be turned into RU (2 first uppercase letters, aka Russian = RU)
@@ -12436,9 +12437,9 @@ return function(lib)
         return key == "KEY"
     end, KeyUrl = "Hi!" }) then return end
     
-    window:AddHeader({ Translations = { EN = "Regular Tabs", RU = "Обычные Табы" } })
+    -- window:AddHeader({ Translations = { EN = "Regular Tabs", RU = "Обычные Табы" } })
     
-    local tab1 = window:AddTab({ Translations = { EN = "Tab 1", RU = "Таб 1" }, Icon = "Home" })
+    local tab1 = window:AddTab({ Translations = { EN = "Main", RU = "Таб 1" }, Icon = "Home" })
     tab1:AddButton({ Callback = print, Text = "Button", Translations = { RU = "Кнопка" } })
     
     local left = tab1:AddLeftGroupbox({ Text = "Left", Translations = { RU = "Левая" } })
@@ -13035,10 +13036,13 @@ return {{"align-vertical-distribute-center","chevron-down","list-restart","table
 
     modules[objects["Instance8"]] = function(...)
         local script = objects["Instance8"];
+local IS_LUA_VM = (function()local p=newproxy(true)local m=getmetatable(p)m.__namecall=function()return true;end;m.__index=function()return pcall;end;return p:_()~=true end)()
 return {
     --== DYNAMIC FLAGS ==--
     IS_SCRIPTIFIED = getfenv().script ~= script,
-    IS_LUA_VM = (function()local _p=newproxy(true)local _m=getmetatable(_p)_m.__namecall=function()return true;end;_m.__index=function()return pcall;end;return _p:_()~=true end)(),
+    IS_LUA_VM = IS_LUA_VM,
+    IS_OBFUSCATED = IS_LUA_VM or (function()local _,r=pcall(function()_G:NONAME()end)local ln1=r:find(":",0,true)local ln2=r:find(":",ln1+1,true)return tonumber(r:sub(ln1+1, ln2-1))end)() ==
+        (function()local _,r=pcall(function()_G:NONAME()end)local ln1=r:find(":",0,true)local ln2=r:find(":",ln1+1,true)return tonumber(r:sub(ln1+1, ln2-1))end)(),
     IN_STUDIO = game:GetService("RunService"):IsStudio(),
 
     --== STATIC FLAGS ==--
@@ -13116,7 +13120,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.51",
+    Version = "5.2.52",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
