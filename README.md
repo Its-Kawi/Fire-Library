@@ -52,7 +52,7 @@ Supports desktop, mobile, emulators, and touch devices out of the box with autom
 ## 🚀 Getting Started
 
 ```lua
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Null-Cherry/Fire-Library/refs/heads/main/Loader.lua"))()
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Its-Kawi/Fire-Library/refs/heads/main/Loader.lua"))()
 local window = lib:Window({
     Title = "My Awesome Script"
 })
@@ -115,7 +115,7 @@ Want to stay updated with new features, get help, or contribute?
 #### Links
 
 💬 **Discord:** [Join our server](https://discord.gg/4bexJD6WVT)  
-📘 **Documentation:** [How to use the library](https://github.com/Null-Cherry/Fire-Library/blob/main/Documentation.md)
+📘 **Documentation:** [How to use the library](https://github.com/Its-Kawi/Fire-Library/blob/main/Documentation.md)
 
 ---
 
