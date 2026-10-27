@@ -444,11 +444,10 @@ do -- Set properties
     objects["Instance0"]["Parent"] = parent;
     objects["Instance0"]["IgnoreGuiInset"] = true;
     objects["Instance0"]["ClipToDeviceSafeArea"] = false;
-    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["Name"] = "FireLibV5";
     objects["Instance0"]["DisplayOrder"] = 2147483646;
+    objects["Instance0"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
     objects["Instance0"]["ScreenInsets"] = Enum.ScreenInsets.DeviceSafeInsets;
-    objects["Instance0"]["Enabled"] = false;
     objects["Instance0"]["SafeAreaCompatibility"] = Enum.SafeAreaCompatibility.None;
     objects["Instance0"]["ResetOnSpawn"] = false;
 
@@ -11129,7 +11128,7 @@ local windowFuncs; windowFuncs = {
             object:TryClose()
         end)
 
-        local dsc = window.RealWindow.Contents.TopbarZone.Right.Close
+        local dsc = window.RealWindow.Contents.TopbarZone.Right.Discord
         cons[#cons + 1] = dsc.MouseEnter:Connect(function()
             tweenOnce(dsc.ImageLabel, TIn(0.4 / handleAnimationSpeed(object.Options.AnimationSpeed)), { ImageTransparency = 0 })
         end)
@@ -12206,22 +12205,6 @@ library = newObject({
             Translate = translators,
             Translators = translators
         }, self)
-        
-        spawn(function()
-            --[[for i, v in coreWindow.Objects do
-                if v.Class ~= "Tab" and v.Class ~= "Header" and v.Class ~= "Separator" then
-                    v:Destroy()
-                end
-            end
-            
-            uiBackBlur:Unbind(coreWindow.BlurFrame)
-            coreWindow.Cursor:Destroy()
-            coreWindow.MobileButton:Destroy()
-            coreWindow.Window:Destroy()
-            for _, v in coreWindow._Blurs do
-                v[2]:Destroy()
-            end]]
-        end)
 
         return object
     end,
@@ -12256,11 +12239,15 @@ library = newObject({
         repeat render() until window.Options.ExecutionTimes -- function
 
         window._Ready = true
-
-        local ts = window.ThemeString
-        if ts ~= "" then
-            window:SetThemeString(ts)
-        end
+        
+        task.spawn(function()
+            local ts = window.ThemeString
+            
+            if ts ~= "" and not window.LibrarySettingsNullFire3.TM.AutoLoadTheme.Value then
+                rs.RenderStepped:Wait()
+                window:SetThemeString(ts)
+            end
+        end)
 
         return window
     end,
@@ -13120,7 +13107,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.52",
+    Version = "5.2.53",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
