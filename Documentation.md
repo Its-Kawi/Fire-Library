@@ -422,6 +422,22 @@ slider:Set(75)
 | `BypassSetValue` | If `AllowSetValue` is true, this options allows to set any value, bypassing incrementation and min-max limits |
 
 If your code needs an integer, round/clamp the value in the callback rather than assuming a displayed value is already an integer. Keep `Min` and `Max` different and check the range before applying it to your own code.
+Some numbers can be weird, so Slider exposes a `:FixNum(num)`
+
+```lua
+local slider = group:AddSlider("Opacity", {
+    Text = "Opacity",
+    Min = 0,
+    Max = 1,
+    Step = 0.01,
+    Value = 0.5,
+    AllowSetValue = true,
+    BypassSetValue = true,
+    Format = function(self)
+        return self:FixNum(self.Value) .. " | " .. self:FixNum(self.Max)
+    end
+})
+```
 
 ### Dropdowns
 
