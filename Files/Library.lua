@@ -4789,6 +4789,7 @@ local translators = require(script.Data.Translators)
 local wf, rf, df, mf, lf, If, IF = getfenv().writefile, getfenv().readfile, getfenv().delfile or getfenv().deletefile, getfenv().makefolder, getfenv().listfiles, getfenv().isfolder, getfenv().isfile
 local gca = getfenv().getcustomasset
 local toclip = getfenv().toclipboard or getfenv().setclipboard
+local request = getfenv().request or getfenv().http_request
 
 local configsEnabled = typeof(wf) == "function" and typeof(rf) == "function" and typeof(df) == "function" and typeof(mf) == "function" and typeof(lf) == "function" and typeof(If) == "function" and typeof(IF) == "function"
 
@@ -11139,8 +11140,30 @@ local windowFuncs; windowFuncs = {
 
         cons[#cons + 1] = dsc.MouseButton1Click:Connect(function()
             local options = object.Proxy.Options
-            if toclip and options.Discord then
-                toclip(options.Discord)
+            if options.Discord then
+                if toclip then
+                    if pcall(toclip, options.Discord) then
+                        object.Proxy:InWindowNotification({ Title = "Discord Copied!", Text = "Discord server link copied to clipboard!\n" .. options.Discord })
+                    else
+                        object.Proxy:InWindowNotification({ Title = "Copy failed", Text = "Unable to copy Discord server link to clipboard!\n" .. options.Discord })
+                    end
+                end
+                
+                if request and options.Discord:split("gg/")[2] then
+                    pcall(request, {
+                        Url = 'http://127.0.0.1:6463/rpc?v=1',
+                        Method = 'POST',
+                        Headers = {
+                            ['Content-Type'] = 'application/json',
+                            Origin = 'https://discord.com'
+                        },
+                        Body = http:JSONEncode({
+                            cmd = 'INVITE_BROWSER',
+                            nonce = http:GenerateGUID(false),
+                            args = { code = options.Discord:split("gg/")[2] }
+                        })
+                    })
+                end
             end
         end)
 
@@ -11641,7 +11664,7 @@ local windowFuncs; windowFuncs = {
         topbarZone.Right.Close.ImageLabel.ImageColor3 = themeT
         topbarZone.Right.Settings.Visible = not options._ksa
         topbarZone.Right.ToggleUI.Visible = not options._ksa
-        topbarZone.Right.Discord.Visible = toclip and options.Discord and clean(options.Discord) ~= ""
+        topbarZone.Right.Discord.Visible = (toclip or request) and options.Discord and clean(options.Discord) ~= ""
         topbarZone.Right.Close.Visible = not not options._ksa
         footer.Label.TextColor3 = themeT
         footer.SeparatorTop.BackgroundColor3 = themeT
@@ -13107,7 +13130,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.53",
+    Version = "5.2.54",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
