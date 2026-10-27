@@ -9560,6 +9560,7 @@ local defaultNotificationOptions = { __index = {
     Title = "Notification",
     Text = "Hello, world!",
     HasButtons = false,
+    HasButton = false,
     Icon = "",
     Side = "-",
     UseOgScaling = "-",
@@ -10605,7 +10606,7 @@ local windowFuncs; windowFuncs = {
     Notification = function(self, options)
         options = setmetatable(options or { }, defaultNotificationOptions)
 
-        if options.HasButtons then
+        if options.HasButtons or options.HasButton then
             if options.Duration >= 1000 or options.Duration <= 0 then
                 options.Duration = inf
             end
@@ -10660,7 +10661,7 @@ local windowFuncs; windowFuncs = {
         notif.Background.Progress.Fill.Size = U2s(1, 1)
         notif.Background.Progress.Fill.AnchorPoint = V2n(s == "Left" and 0 or 1, 0)
         notif.Background.Progress.Fill.Position = U2s(s == "Left" and 0 or 1, 0)
-        notif.Background.Holder.Buttons.Visible = options.HasButtons
+        notif.Background.Holder.Buttons.Visible = options.HasButtons or options.HasButton
         notif.Background.Holder.Halfer.Position = U2s(s == "Left" and 0 or 0.5, 0)
         notif.Background.OutsideStroke.Enabled = not opts.NoStrokes
         notif.Background.UICorner.CornerRadius = cornerState[opts.RoundEverything]
@@ -10711,6 +10712,8 @@ local windowFuncs; windowFuncs = {
                 pick = false
                 done = true
             end)
+            
+            notif.Background.Holder.Buttons.No.Visible = options.HasButtons
 
             spawn(function()
                 tweenOnce(notif, TIn(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), { Size = old })
@@ -13130,7 +13133,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.54",
+    Version = "5.2.55",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
