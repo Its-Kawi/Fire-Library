@@ -12104,6 +12104,21 @@ local windowFuncs; windowFuncs = {
         end
         
         options._closedb = false
+    end,
+    
+    SmartNotification = function(self, options)
+        options = options or { }
+        options.HasButtons = true
+        options.Duration = inf
+        
+        if self.Options.Visible then
+            return self:InWindowNotification(options)
+        else
+            return self:Notification(options)
+        end
+    end,
+    SmartNotify = function(self, ...)
+        return self:SmartNotification(...)
     end
 }
 
@@ -12266,11 +12281,11 @@ library = newObject({
 
         window._Ready = true
         
-        task.spawn(function()
+        spawn(function()
+            rs.RenderStepped:Wait()
+
             local ts = window.ThemeString
-            
             if ts ~= "" and not window.LibrarySettingsNullFire3.TM.AutoLoadTheme.Value then
-                rs.RenderStepped:Wait()
                 window:SetThemeString(ts)
             end
         end)
@@ -13133,7 +13148,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.55",
+    Version = "5.2.56",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
