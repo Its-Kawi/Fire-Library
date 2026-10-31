@@ -5112,10 +5112,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     drawKBL(false)
     window._Connections[#window._Connections + 1] = window.Options.KeybindMode:Connect(drawKBL)
 
-    local settingsMainTab = window:AddTab("LibrarySettings" .. window.Flag .. "1", { Text = "Main Settings", Icon = "Cog", Order = max32 })
-    local settingsConfigTab = window:AddTab("LibrarySettings" .. window.Flag .. "2", { Text = "Config Settings", Icon = "Cog", Order = max32 - 1 })
-    local settingsThemeTab = window:AddTab("LibrarySettings" .. window.Flag .. "3", { Text = "Theme Settings", Icon = "Cog", Order = max32 - 2 })
-    local settingsOtherTab = window:AddTab("LibrarySettings" .. window.Flag .. "4", { Text = "Other Settings", Icon = "Cog", Order = max32 - 3 })
+    local settingsMainTab = window:AddTab("LibrarySettings1", { Text = "Main Settings", Icon = "Cog", Order = max32 })
+    local settingsConfigTab = window:AddTab("LibrarySettings2", { Text = "Config Settings", Icon = "Cog", Order = max32 - 1 })
+    local settingsThemeTab = window:AddTab("LibrarySettings3", { Text = "Theme Settings", Icon = "Cog", Order = max32 - 2 })
+    local settingsOtherTab = window:AddTab("LibrarySettings4", { Text = "Other Settings", Icon = "Cog", Order = max32 - 3 })
 
     local current = "Main"
     local reparent
@@ -9319,7 +9319,7 @@ local tabFuncs = {
         local parnt = self.Parent
         local prox = self.Proxy
 
-        local ls = "LibrarySettings" .. window.Flag
+        local ls = "LibrarySettings"
         if options.Flag:sub(1, #ls) ~= ls then
             local pwrcd = parnt.Window.RealWindow.Contents.DisplayBlur.Downsampler.Display
             safeReparent(tb, pwrcd.PageButtons.List)
@@ -12285,7 +12285,7 @@ library = newObject({
             rs.RenderStepped:Wait()
 
             local ts = window.ThemeString
-            if ts ~= "" and not window.LibrarySettingsNullFire3.TM.AutoLoadTheme.Value then
+            if ts ~= "" and not window.LibrarySettings3.TM.AutoLoadTheme.Value then
                 return ts
             end
         end
@@ -12294,9 +12294,10 @@ library = newObject({
             while true do
                 local s, e = pcall(applyTs)
                 if s then
-                    rs.RenderStepped:Wait()
-                    window:SetThemeString(e)
-                    
+                    if e then
+                        window:SetThemeString(e)
+                    end
+                        
                     break
                 end
             end
@@ -13160,7 +13161,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.562",
+    Version = "5.2.563",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
