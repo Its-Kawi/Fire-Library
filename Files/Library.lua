@@ -12286,14 +12286,17 @@ library = newObject({
 
             local ts = window.ThemeString
             if ts ~= "" and not window.LibrarySettingsNullFire3.TM.AutoLoadTheme.Value then
-                window:SetThemeString(ts)
+                return ts
             end
         end
         
         spawn(function()
             while true do
-                local s = pcall(applyTs)
+                local s, e = pcall(applyTs)
                 if s then
+                    rs.RenderStepped:Wait()
+                    window:SetThemeString(e)
+                    
                     break
                 end
             end
@@ -13157,7 +13160,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.561",
+    Version = "5.2.562",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
