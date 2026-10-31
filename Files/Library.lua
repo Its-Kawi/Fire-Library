@@ -5274,7 +5274,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 end
 
                 local route = configsRoute .. fl .. name .. json
-                if notifs and IF(route) then if not window:InWindowNotification({ Title = "Config Exists", Text = "Config '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
+                if notifs and IF(route) then if not window:SmartNotification({ Title = "Config Exists", Text = "Config '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
 
                 wf(route, window:GetConfigString(), true)
                 configDropdown.Values = getExistingConfigs()
@@ -5350,7 +5350,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     local route = configsRoute .. fl .. name .. json
                     if not IF(route) then return window:Notification({ Title = "Error", Text = "Config '" .. name .. "' does not exist" }) end
 
-                    if window:InWindowNotification({ Title = "Delete Config", Text = "Are you sure you want to delete config '" .. name .. "'?", HasButtons = true }) then
+                    if window:SmartNotification({ Title = "Delete Config", Text = "Are you sure you want to delete config '" .. name .. "'?", HasButtons = true }) then
                         df(route)
                         configDropdown.Values = getExistingConfigs()
 
@@ -5532,7 +5532,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     if not validateName(name) then return window:Notification({ Title = "Error", Text = "Invalid theme name. Use 1–32 characters, no \\ or /" }) end
                     
                     local route = themesRoute .. name .. json
-                    if IF(route) then if not window:InWindowNotification({ Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
+                    if IF(route) then if not window:SmartNotification({ Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
 
                     wf(route, window:GetThemeString(), true)
                     themeDropdown.Values = getExistingThemes()
@@ -5582,7 +5582,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     local route = themesRoute .. name .. json
                     if not IF(route) then return window:Notification({ Title = "Error", Text = "Theme '" .. name .. "' does not exist" }) end
 
-                    if window:InWindowNotification({ Title = "Delete Theme", Text = "Are you sure you want to delete theme '" .. name .. "'?", HasButtons = true }) then
+                    if window:SmartNotification({ Title = "Delete Theme", Text = "Are you sure you want to delete theme '" .. name .. "'?", HasButtons = true }) then
                         df(route)
                         themeDropdown.Values = getExistingThemes()
 
@@ -5612,7 +5612,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 Text = "Restore Default Themes",
                 Icon = "l://circle-fading-plus",
                 Callback = function(self)
-                    if window:InWindowNotification({ Title = "Restore Themes", Text = "Themes with matching names will be overwritten\nContinue?", HasButtons = true }) then
+                    if window:SmartNotification({ Title = "Restore Themes", Text = "Themes with matching names will be overwritten\nContinue?", HasButtons = true }) then
                         self.Disabled = true
                         
                         local c, t = 0, 0
@@ -5819,7 +5819,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             end
 
             db2 = true
-            local res = window:InWindowNotification({ Title = "Theme Generator", Text = "This gonna reset your current theme!\nAre you sure" .. (mrandom(1, 10) == 1 and " you wanna accept being uncreative?\n\n(an easter egg btw)" or "?"), HasButtons = true })
+            local res = window:SmartNotification({ Title = "Theme Generator", Text = "This gonna reset your current theme!\nAre you sure" .. (mrandom(1, 10) == 1 and " you wanna accept being uncreative?\n\n(an easter egg btw)" or "?"), HasButtons = true })
             db2 = false
 
             if res then
@@ -9271,11 +9271,13 @@ local tabFuncs = {
         cons[#cons + 1] = tab.GroupboxZone.RightGroupboxZone.ChildRemoved:Connect(gbc2)
 
         local cnt = 0
-        cons[#cons + 1] = rs.RenderStepped:Connect(function()
-            cnt = (cnt + 1) % 5
+        spawn(function()
+            while wait(1) and not object.Closed do
+                cnt = (cnt + 1) % 5
 
-            if cnt == 0 then
-                tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
+                if cnt == 0 then
+                    tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
+                end
             end
         end)
 
@@ -11411,7 +11413,7 @@ local windowFuncs; windowFuncs = {
             render()
             gui.Enabled = true
 
-            while wait(0.05) and not object.Closed do
+            while wait(1 / 12) and not object.Closed do
                 object:RefreshUserProfile()
             end
         end)
@@ -12155,9 +12157,11 @@ tooltipObject = newObject({
             Options = options,
             Class = self.Class
         }, self)
-
-        rs.RenderStepped:Connect(function()
-            object.Proxy:Refresh()
+        
+        spawn(function()
+            while wait(1 / 48) do
+                object.Proxy:Refresh()
+            end
         end)
 
         return object
@@ -13161,7 +13165,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.563",
+    Version = "5.2.57",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
