@@ -6228,12 +6228,12 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         if window.Closed then
             if c1 then c1:Disconnect() end
             if c2 then c2:Disconnect() end
-            if c3 then c1:Disconnect() end
-            if c4 then c2:Disconnect() end
-            if c5 then c1:Disconnect() end
-            if c6 then c2:Disconnect() end
-            if c7 then c1:Disconnect() end
-            if c8 then c2:Disconnect() end
+            if c3 then c3:Disconnect() end
+            if c4 then c4:Disconnect() end
+            if c5 then c5:Disconnect() end
+            if c6 then c6:Disconnect() end
+            if c7 then c7:Disconnect() end
+            if c8 then c8:Disconnect() end
             return
         end
     end
@@ -6923,7 +6923,7 @@ local function OR(...)
 
     local function cn()
         for i, v in cons do
-            if v.Connected then
+            if v and v.Connected then
                 v:Disconnect()
             end
         end
@@ -8035,7 +8035,7 @@ local basicObjects = {
 
             local dc = self.DynamicConnections
             for _, conn in dc do
-                if conn.Connected then
+                if conn and conn.Connected then
                     conn:Disconnect()
                 end
             end
@@ -9629,7 +9629,9 @@ local floatingLabel = {
         self.Label:Destroy()
 
         for i, v in self.Connections do
-            v:Disconnect()
+            if v and v.Connected then
+                v:Disconnect()
+            end
         end
 
         local window = getWindow(self)
@@ -9809,7 +9811,6 @@ local neverShowAgainCache do
         local s, r = pcall(rf, nsaCacheRoute, true)
         if s and typeof(r) == "table" then
             neverShowAgainCache = r
-            print("LOADED FROM FILES")
         end
     end
     
@@ -9919,7 +9920,9 @@ local iwnFunctions = {
             wait()
 
             for i, v in localCons do
-                v:Disconnect()
+                if v and v.Connected then
+                    v:Disconnect()
+                end
             end
 
             localCons = nil
@@ -10584,7 +10587,9 @@ local windowFuncs; windowFuncs = {
 
         for i, v in cons do
             if v.Connected then
-                v:Disconnect()
+                if v and v.Connected then
+                    v:Disconnect()
+                end
             end
         end
 
@@ -10829,7 +10834,6 @@ local windowFuncs; windowFuncs = {
         
         local returned = options._returned
         if returned ~= nil then
-            print("RETURN OMFG")
             if options.HasButtons then
                 return returned
             end
@@ -11270,7 +11274,9 @@ local windowFuncs; windowFuncs = {
         label.Destroying:Once(function()
             object.Options.InfoLabel = nil
             for i, v in myCons do
-                v:Disconnect()
+                if v and v.Connected then
+                    v:Disconnect()
+                end
             end
         end)
 
@@ -13165,7 +13171,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.57",
+    Version = "5.2.58",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
@@ -13623,24 +13629,14 @@ local eventBase = {
         return unpack(result, 1, result.n)
     end,
     Cleanup = function(self)
-        if not self._Dirty then
-            return
-        end
+        if not self._Dirty then return end
 
         local cons = self._Connections
-        local write = 1
-
-        for read = 1, #cons do
-            local connection = cons[read]
-
-            if connection and connection.Connected then
-                cons[write] = connection
-                write += 1
+        for i = #cons, 1, -1 do
+            local v = cons[i]
+            if not v or not v.Connected then
+                remove(cons, i)
             end
-        end
-
-        for i = write, #cons do
-            cons[i] = nil
         end
 
         rawset(self, "_Dirty", false)
