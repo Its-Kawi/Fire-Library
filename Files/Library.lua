@@ -6625,6 +6625,8 @@ local ridx = max32
 local getWindow do
     local objectCache = setmetatable({ }, { __mode = "kv" })
     getWindow = function(obj)
+        if not obj then return end
+        
         local v = objectCache[obj]
         if v ~= nil then
             return v
@@ -6868,6 +6870,7 @@ local newObject do
         
         -- local inited = init(instructions, options)
         
+        if not inited then return end
         for i, v in instructions do
             if i ~= "Init" and i ~= "DefaultOptions" then
                 inited[i] = inited[i] or v
@@ -9870,7 +9873,7 @@ local iwnFunctions = {
                 refreshState()
             end)
             
-            refreshState()
+            defer(refreshState)
         end
         
         local b1 = getPlaceholder("IWNButton")
@@ -10830,6 +10833,8 @@ local windowFuncs; windowFuncs = {
     },
     WindowNotification = function(self, ...)
         local object = newObject(iwnFunctions, self, ...)
+        if not object then return false end
+        
         local options = object.Options
         
         local returned = options._returned
@@ -13171,7 +13176,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.58",
+    Version = "5.2.59",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
