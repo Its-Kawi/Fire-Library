@@ -4966,7 +4966,7 @@ local ping do
         local disconnected = false
         local prevPing = plr:GetNetworkPing()
         local pingChangeTime = prevPing * 10
-        
+
         ping = prevPing
 
         local ev = rrs and rrs:WaitForChild("GetServerVersion", prevPing + 1)
@@ -4991,14 +4991,14 @@ local ping do
 
                 ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, prevPing)
                 if disconnected then break end
-                
+
                 wait()
             end
         else
             spawn(function()
                 while wait() do
                     local np = plr:GetNetworkPing()
-                    
+
                     disconnected = disconnected or np < 0
                     ping = disconnected and -1 or max(tick() - pingTE - pingChangeTime, np)
 
@@ -5095,7 +5095,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 if #translated == 0 then
                     translated = v.Options.Reference.Class
                 end
-                
+
                 str ..= ` <font color="#{color:ToHex()}" transparency="{v.Options.Reference.Options.Disabled and 0.35 or 0}">{"[" .. gsubInput(Enum.KeyCode:FromValue(v.Options.Value).Name) .. "] " .. antiRich(translated)}</font> \n`
             end
         end
@@ -5176,12 +5176,12 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     spawn(function()
         local fl = window.FlagHash .. "/"
         local hidden = { }
-        
+
         local themesFailGb
         if not configsEnabled then
             settingsConfigTab:AddLabel({ Text = "Saving configs and themes are <b>unavailable in your environment</b>!" })
             settingsConfigTab:AddSeparator({ Invisible = true })
-            
+
             themesFailGb = settingsThemeTab:AddLeftGroupbox("TMFail", { Text = "Theme Manager" })
             themesFailGb:AddLabel({ Text = "Saving configs and themes are <b>unavailable in your environment</b>!" })
             themesFailGb:AddSeparator({ Invisible = true })
@@ -5191,13 +5191,13 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         local lol2 = settingsThemeTab:AddLabel({ Text = "Loading configs and themes functions, wait...", Visible = configsEnabled })
         local lol3 = settingsConfigTab:AddLabel({ Text = "Looks like your executor experienced an error loading config and themes functions\nPlease retry!", Visible = false })
         local lol4 = settingsThemeTab:AddLabel({ Text = "Looks like your executor experienced an error loading config and themes functions\nPlease retry!", Visible = false })
-        
+
         delay(10, function()
             if lol.Visible then
                 lol.Visible = false
                 lol3.Visible = true
             end
-            
+
             if lol2.Visible then
                 lol2.Visible = false
                 lol4.Visible = true
@@ -5259,7 +5259,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
             function saveConfig(notifs)
                 if window.Closed then return end
-                
+
                 local old = autoSavingEnabled
                 autoSavingEnabled = nil
 
@@ -5278,7 +5278,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
                 wf(route, window:GetConfigString(), true)
                 configDropdown.Values = getExistingConfigs()
-                
+
                 if autoSavingEnabled == nil then
                     autoSavingEnabled = old
                 end
@@ -5390,7 +5390,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             hidden[#hidden + 1] = autoSaveConfig
             hidden[#hidden + 1] = settingsConfigTab:AddSeparator({ Invisible = true, Visible = false })
         end
-        
+
         local first = true
         configString = settingsConfigTab:AddTextBox("ConfigString", {
             NoConfigs = true,
@@ -5401,7 +5401,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     first = false
                     return
                 end
-                
+
                 if window.Closed then return end
 
                 if text ~= window:GetConfigString() then
@@ -5446,7 +5446,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     changed = true
                 end
             end)
-            
+
             changed = true
         end
 
@@ -5488,7 +5488,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         if configsEnabled then
             local themeManager = settingsThemeTab:AddLeftGroupbox("TM", { Text = "Theme Manager", Visible = false })
             hidden[#hidden + 1] = themeManager
-            
+
             themeTextBox = themeManager:AddTextBox("ThemeName", {
                 PlaceholderText = "Enter Theme name",
                 NoConfigs = true,
@@ -5527,10 +5527,10 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 Icon = "Save",
                 Callback = function()
                     if window.Closed then return end
-                    
+
                     local name = themeTextBox.Value
                     if not validateName(name) then return window:Notification({ Title = "Error", Text = "Invalid theme name. Use 1–32 characters, no \\ or /" }) end
-                    
+
                     local route = themesRoute .. name .. json
                     if IF(route) then if not window:SmartNotification({ Title = "Theme Exists", Text = "Theme '" .. name .. "' already exists!\nDo you want to overwrite it?", HasButtons = true }) then return end end
 
@@ -5605,7 +5605,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                     end
                 end,
             })
-            
+
             themeManager:AddSeparator({ Invisible = true })
 
             themeManager:AddButton({
@@ -5614,29 +5614,29 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                 Callback = function(self)
                     if window:SmartNotification({ Title = "Restore Themes", Text = "Themes with matching names will be overwritten\nContinue?", HasButtons = true }) then
                         self.Disabled = true
-                        
+
                         local c, t = 0, 0
                         for i, v in premadeThemes do
                             c += 1
-                            
+
                             spawn(function()
                                 wf(themesRoute .. i .. json, v, true)
                                 t += 1
                             end)
                         end
-                        
+
                         while c == 0 or t < c or window.Closed do wait() end
                         if not window.Closed then
                             themeDropdown.Values = getExistingThemes()
                             self.Disabled = false
-                            
+
                             window:InWindowNotification({ Title = "Themes Restored", Text = "Successfully restored themes!" })
                         end
                     end
                 end
             })
         end
-        
+
         local themeStringGb = settingsThemeTab:AddRightGroupbox("TS", { Text = "Theme String" })
         local themeString = themeStringGb:AddTextBox("ThemeString", {
             NoConfigs = true,
@@ -5699,7 +5699,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
                         while window.Options._ksa do
                             wait()
                         end
-                        
+
                         wait(1 + render())
                     end
 
@@ -5715,7 +5715,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
                         wait(1 + render())
                     end
-                    
+
                     if window.Closed then return end
                     autoSavingEnabled = true
                 end)
@@ -5744,7 +5744,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             lol2.Visible = false
             lol3.Visible = false
             lol4.Visible = false
-            
+
             for i, v in hidden do
                 v.Visible = true
             end
@@ -5763,7 +5763,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     end)
 
     local themeObjects = { }
-    
+
     local themeEditorGb = settingsThemeTab:AddRightGroupbox("TE", { Text = "Theme Editor" })
     local theme = themeEditorGb:AddLabel({ Text = "Theme" })
     themeObjects.Main = theme:AddColorPicker({ NoConfigs = true })
@@ -5896,7 +5896,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             window.Options.Theme[i] = col
         end
 
-        window:Refresh()
+        -- window:Refresh()
     end })
 
     settingsOtherTab:AddHeader({ Text = "Info Label" })
@@ -5926,7 +5926,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
             end, Disabled = true })
         end
     end
-    
+
     local ilgb = settingsThemeTab:AddLeftGroupbox("IL", { Text = "Info Label" })
     local ile = ilgb:AddTextBox({ PlaceholderText = "Manual Info Label extra text", MultiLine = true, Instant = true, NoConfigs = true, Value = window.Options.InfoLabelExtra or "", Text = "Info label extra text", Callback = function(val)
         window.Options.InfoLabelExtra = val
@@ -5962,7 +5962,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         mt.Disabled = val
         lmt.Disabled = not rest.Value and not mt.Value
     end })
-    
+
     local togglesGb = settingsThemeTab:AddLeftGroupbox("TGB", { Text = "Toggles" })
 
     mt = togglesGb:AddToggle({ Text = "Modern Toggles", NoConfigs = true, Value = window.Options.ModernToggles, Callback = function(val)
@@ -5974,9 +5974,9 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
     end })
 
     lmt.Disabled = not rest.Value and not mt.Value
-    
+
     local blursGb = settingsThemeTab:AddLeftGroupbox("BGB", { Text = "Blurs" })
-    
+
     local bs, fbs
     local bbg = blursGb:AddToggle("BlurBackground", { Text = "Blur Behind UI", Tooltip = "<b>NOT ALWAYS WORKING</b>\nUsually high quality required for this feature to work", NoConfigs = true, Value = window.Options.BlurBackground, Callback = function(val)
         window.BlurBackground = val
@@ -5995,15 +5995,15 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
     bs.Disabled = not bbg.Value
     fbs.Disabled = not bbg.Value
-    
+
     blursGb:AddSeparator()
-    
+
     local bp
     local uib = blursGb:AddToggle("UIBlur", { Text = "UI Blurring Enabled", NoConfigs = true, Value = window.Options.EnableUIBlur, Callback = function(val)
         window.EnableUIBlur = val
         bp.Disabled = not val
     end })
-    
+
     bp = blursGb:AddToggle("BlurProfile", { Text = "Blur Profile", Tooltip = "NOTE: Profile is visible only in some scripts, so often that feature does nothing!", NoConfigs = true, Value = window.Options.EnableUIBlur, Callback = function(val)
         window.BlurProfile = val
     end })
@@ -6066,7 +6066,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         "Left",
         "Right"
     }
-    
+
     local notificationsGb = settingsThemeTab:AddLeftGroupbox("NsGB", { Text = "Notifications" })
     local ns = notificationsGb:AddDropdown("NotificationSide", { Text = "Notifications Default side", NoConfigs = true, Values = sides, Callback = function(val)
         if window.Closed then return end
@@ -6085,7 +6085,7 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
 
         window:Notification({ Title = "This is a notification!", Text = randomText:sub(1, -2) })
     end })
-    
+
     local otherGb = settingsThemeTab:AddRightGroupbox("OGB", { Text = "Other" })
     local as = otherGb:AddSlider("AnimationSpeed", { Text = "Animation Speeds", NoConfigs = true, Value = window.Options.AnimationSpeed, Callback = function(val)
         window.AnimationSpeed = val
@@ -6178,14 +6178,14 @@ local function windowSetup(object) -- in theory, that function is just a plugin 
         end
 
         tclear(langs)
-            
+
         for i, v in window.PossibleLanguages do
             local v = window.Languages[v]
             if not v then
                 tremove(window.PossibleLanguages, i)
                 break
             end
-                
+
             tinsert(langs, v[3] .. " " .. v[1] .. " (" .. v[2] .. ")")
         end
 
@@ -6626,7 +6626,7 @@ local getWindow do
     local objectCache = setmetatable({ }, { __mode = "kv" })
     getWindow = function(obj)
         if not obj then return end
-        
+
         local v = objectCache[obj]
         if v ~= nil then
             return v
@@ -6649,6 +6649,9 @@ local getWindow do
         end
     end
 end
+
+local refreshColorsForObject
+local connectColorsToWindow, disconnectColorsFromWindow
 
 local newObject do
     local currentProperty = ""
@@ -6778,6 +6781,9 @@ local newObject do
     local deferedRefreshes = { }
     local function objectRefresh(inited, s)
         pcall(inited.Refresh, inited)
+        if refreshColorsForObject then
+            refreshColorsForObject(inited.Proxy or inited)
+        end
         deferedRefreshes[s] = nil
     end
 
@@ -6786,6 +6792,15 @@ local newObject do
 
         local inited = references[self] or self
         local newValue = key == "Enabled" and not val or key ~= "Enabled" and (val ~= nil and val or false)
+        if key == "ColorChangeSpeed" then
+            local speed = tonumber(val)
+
+            if not speed or speed ~= speed then
+                speed = tonumber(inited.Options.ColorChangeSpeed) or 0.3
+            end
+
+            newValue = clamp(speed, 0.005, 2)
+        end
 
         if inited.Options[key] ~= newValue then
             inited.Options[key] = newValue
@@ -6867,15 +6882,16 @@ local newObject do
         if not success then
             error("Error while creating an object '" .. (instructions.Class or "Unknown") .. "'\n\nPassed options: " .. je(options or "BAD") .. "\n\nError: " .. inited, 0)
         end
-        
+
         -- local inited = init(instructions, options)
-        
+
         if not inited then return end
         for i, v in instructions do
             if i ~= "Init" and i ~= "DefaultOptions" then
                 inited[i] = inited[i] or v
             end
         end
+
 
         local object = newproxy(true)
         tostrLookups[object] = tostring(object)
@@ -7191,6 +7207,36 @@ translate = function(self, category, grabFromWindow)
     return typeof(translationsPage) == "string" and translationsPage ~= "" and category:sub(1, 1):upper() .. category:sub(2) == "Text" and translationsPage or typeof(translationsPage) == "table" and translationsPage[category] or options[category] or ""
 end
 
+local tooltipColorWindow
+local function updateTooltipColors()
+    if not tooltipObject then return end
+
+    local options = tooltipObject.Options
+    local window = options.Window or coreWindow
+    if window ~= tooltipColorWindow then
+        if tooltipColorWindow then
+            disconnectColorsFromWindow(tooltipObject, tooltipObject.Tooltip)
+            disconnectColorsFromWindow(tooltipObject, tooltipObject.Tooltip.OutsideStroke)
+            disconnectColorsFromWindow(tooltipObject, tooltipObject.Tooltip.TextLabel)
+        end
+
+        tooltipColorWindow = window
+        if window then
+            connectColorsToWindow(tooltipObject, {
+                Back = {
+                    { tooltipObject.Tooltip, "BackgroundColor3", function(theme)
+                        return theme.Back:Lerp(theme.Stroke, options.Dark and 0.35 or 0)
+                    end }
+                },
+                Stroke = { { tooltipObject.Tooltip.OutsideStroke, "Color" } },
+                Text = { { tooltipObject.Tooltip.TextLabel, "TextColor3" } }
+            }, window)
+        end
+    else
+        refreshColorsForObject(tooltipObject)
+    end
+end
+
 local function hoverLogic(object, instance)
     local window = getWindow(object)
     local cons = window._Connections
@@ -7210,6 +7256,7 @@ local function hoverLogic(object, instance)
 
         tooltipObject.Options.Window = window
         tooltipObject.Options.Dark = object.Options.Disabled
+        updateTooltipColors()
         tooltipObject.Text = tt
     end)
 
@@ -7218,6 +7265,7 @@ local function hoverLogic(object, instance)
 
         tooltipObject.Options.Window = coreWindow
         tooltipObject.Options.Dark = false
+        updateTooltipColors()
         tooltipObject.Text = ""
     end)
 end
@@ -7244,7 +7292,7 @@ end
 local function addPossibleTranslations(object)
     object = object.Proxy or object
     local window = getWindow(object)
-    
+
     if not window then return end
 
     if object.Translations then
@@ -7255,7 +7303,7 @@ local function addPossibleTranslations(object)
             end
         end
     end
-    
+
     object:Refresh()
 end
 
@@ -7383,7 +7431,7 @@ end
 local function themeSync(object, cons)
     local window = getWindow(object)
     local cons = cons or window._Connections
-    
+
     cons[#cons + 1] = window.ThemeChanged:Connect(function()
         object:Refresh()
     end)
@@ -7402,8 +7450,185 @@ local function softCallback(cb, ...)
     if result[1] then
         return unpack(result, 2, result.n)
     end
-    
+
     warn("Error occured during a Callback call:\n" .. tostring(result[2]))
+end
+
+local function tweenColorProperty(instance, property, color, duration)
+    local colorTween = tween:Create(
+        instance,
+        TIn(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+        { [property] = color }
+    )
+
+    colorTween.Completed:Once(function()
+        colorTween:Destroy()
+    end)
+
+    colorTween:Play()
+end
+
+local function applyColorEntry(entry, theme, colorChangeSpeed)
+    local color = theme[entry.Category]
+    if color == nil then return end
+
+    local value = color
+    if entry.Resolve then
+        local success, resolved = pcall(entry.Resolve, theme, color, entry.Instance, entry.Property)
+        if not success then
+            warn("Failed to resolve a window color:", resolved)
+            return
+        end
+
+        value = resolved
+    end
+
+    if value == nil then return end
+
+    if entry.Apply then
+        pcall(entry.Apply, entry.Instance, entry.Property, value, theme, colorChangeSpeed)
+    elseif colorChangeSpeed and typeof(value) == "Color3" then
+        local success = pcall(
+            tweenColorProperty,
+            entry.Instance,
+            entry.Property,
+            value,
+            colorChangeSpeed
+        )
+
+        if not success then
+            pcall(function()
+                entry.Instance[entry.Property] = value
+            end)
+        end
+    else
+        pcall(function()
+            entry.Instance[entry.Property] = value
+        end)
+    end
+end
+
+local function refreshColorEntries(entries, theme, colorChangeSpeed)
+    if not entries or not theme then return end
+
+    for _, entry in entries do
+        applyColorEntry(entry, theme, colorChangeSpeed)
+    end
+end
+
+local colorMapWindows = setmetatable({ }, { __mode = "k" })
+
+connectColorsToWindow = function(object, colorMap, windowOverride)
+    local window = windowOverride or getWindow(object)
+    if not window or typeof(colorMap) ~= "table" then return end
+
+    local owner = references[object] or object
+    colorMapWindows[owner] = window
+    local ownerEntries = window.ColorMapOwners[owner]
+    if not ownerEntries then
+        ownerEntries = { }
+        window.ColorMapOwners[owner] = ownerEntries
+    end
+
+    local ownerLookup = window.ColorMapLookup[owner]
+    if not ownerLookup then
+        ownerLookup = setmetatable({ }, { __mode = "k" })
+        window.ColorMapLookup[owner] = ownerLookup
+    end
+
+    local newEntries = { }
+    for category, colors in colorMap do
+        local categoryEntries = window.ColorMap[category]
+        if not categoryEntries then
+            categoryEntries = { }
+            window.ColorMap[category] = categoryEntries
+        end
+
+        for _, colorInfo in colors do
+            local instance, property = colorInfo[1], colorInfo[2]
+            if not instance or typeof(property) ~= "string" then continue end
+
+            local instanceLookup = ownerLookup[instance]
+            if not instanceLookup then
+                instanceLookup = { }
+                ownerLookup[instance] = instanceLookup
+            end
+
+            local lookupKey = category .. "\0" .. property
+            if instanceLookup[lookupKey] then continue end
+            instanceLookup[lookupKey] = true
+
+            local entry = {
+                Instance = instance,
+                Property = property,
+                Resolve = colorInfo[3],
+                Apply = colorInfo[4],
+                Category = category,
+                Owner = owner
+            }
+
+            tinsert(categoryEntries, entry)
+            tinsert(ownerEntries, entry)
+            tinsert(newEntries, entry)
+        end
+    end
+
+    refreshColorEntries(newEntries, window.Options.Theme)
+end
+
+refreshColorsForObject = function(object)
+    local owner = references[object] or object
+    local window = getWindow(object) or colorMapWindows[owner]
+    if not window then return end
+
+    refreshColorEntries(window.ColorMapOwners[owner], window.Options.Theme)
+end
+
+disconnectColorsFromWindow = function(object, instance)
+    local owner = references[object] or object
+    local window = getWindow(object) or colorMapWindows[owner]
+    if not window or not instance then return end
+
+    local ownerEntries = window.ColorMapOwners[owner]
+    if ownerEntries then
+        for i = #ownerEntries, 1, -1 do
+            local entry = ownerEntries[i]
+            if entry.Instance == instance then
+                tremove(ownerEntries, i)
+                local categoryEntries = window.ColorMap[entry.Category]
+                if categoryEntries then
+                    for j = #categoryEntries, 1, -1 do
+                        if categoryEntries[j] == entry then
+                            tremove(categoryEntries, j)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local ownerLookup = window.ColorMapLookup[owner]
+    if ownerLookup then
+        ownerLookup[instance] = nil
+    end
+
+    if ownerEntries and #ownerEntries == 0 then
+        window.ColorMapOwners[owner] = nil
+        window.ColorMapLookup[owner] = nil
+        colorMapWindows[owner] = nil
+    end
+end
+
+local function refreshColorsForWindow(window, theme)
+    window = getWindow(window) or window
+    if not window then return end
+
+    local theme = theme or window.Options.Theme
+    local speed = window.Options.ColorChangeSpeed
+
+    for _, entries in window.ColorMap do
+        refreshColorEntries(entries, theme, speed)
+    end
 end
 
 local acp
@@ -7468,6 +7693,10 @@ local colorPickerBase = {
             picking = false
         end)
 
+        defer(connectColorsToWindow, object, {
+            Stroke = { { instance.Display.UIStroke, "Color" } }
+        })
+
         defer(themeSync, object)
         return object
     end,
@@ -7488,7 +7717,6 @@ local colorPickerBase = {
         local woptions = window.Options
 
         inst.BackgroundColor3 = options.Value
-        inst.UIStroke.Color = window.Theme.Stroke
         inst.Darker.Visible = options.Disabled
         inst.Parent.Visible = options.Visible
         inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
@@ -7560,6 +7788,10 @@ local keybindBase = {
         end)
 
         defer(object.Setup, object)
+        defer(connectColorsToWindow, object, {
+            Stroke = { { instance.Display.UIStroke, "Color" }, { instance.Display, "BackgroundColor3" } },
+            Main = { { instance.Display, "TextColor3" } }
+        })
 
         return object
     end,
@@ -7622,15 +7854,9 @@ local keybindBase = {
         local options = self.Options
         local woptions = window.Options
 
-        local theme = window.Theme
-        local themeS = theme.Stroke
-
-        inst.TextColor3 = theme.Main
-        inst.UIStroke.Color = themeS
         inst.Parent.Visible = window.IsDesktop and window.KeybindModeActive
         inst.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
         inst.UIStroke.Enabled = not woptions.NoStrokes
-        inst.BackgroundColor3 = themeS
         orderUpdate(inst, -max32)
 
         local v = options.Value
@@ -7720,6 +7946,13 @@ local basicObjects = {
 
             defer(hoverLogic, object, instance)
             defer(keybindSetup, object)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" },
+                    { instance.View.Icon, "ImageColor3", function(theme) return options.RecolorIcon and theme.Text or C3n(1, 1, 1) end }
+                }
+            })
 
             local cons = { }
             defer(addCons, object, cons)
@@ -7793,11 +8026,6 @@ local basicObjects = {
             local view = inst.View
             local opts = self.Options
 
-            local themeT = window.Theme.Text
-            inst.Separator.BackgroundColor3 = themeT
-            view.Label.TextColor3 = themeT
-            view.Icon.ImageColor3 = opts.RecolorIcon and themeT or C3n(1, 1, 1)
-
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(100, 0, 0, y2)
             view.Position = U2n(0, x, 0.5, 0)
@@ -7838,6 +8066,7 @@ local basicObjects = {
             local old = self.Options.Value
             self.Options.Value = value
             self:Refresh()
+            refreshColorsForObject(self)
 
             if old ~= self.Options.Value then
                 local value = self.Options.Value
@@ -7862,6 +8091,24 @@ local basicObjects = {
             }, self)
 
             defer(hoverLogic, object, instance)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label.Label, "TextColor3" },
+                    { instance.View.Label.Icon, "ImageColor3" },
+                    { instance.View.Label.Icon.Opened, "ImageColor3" }
+                },
+                Stroke = {
+                    { instance.View.List, "BackgroundColor3" },
+                    { instance.View.List.NoContents, "TextStrokeColor3" },
+                    { instance.View.List.Selected.Value, "TextStrokeColor3" },
+                    { instance.View.List.UIStroke, "Color" }
+                },
+                Main = {
+                    { instance.View.List.NoContents, "TextColor3" },
+                    { instance.View.List.Selected.Value, "TextColor3" }
+                }
+            })
 
             local cons = { }
             defer(addCons, object, cons)
@@ -7951,23 +8198,7 @@ local basicObjects = {
             local viewLSVal = viewLS.Value
             local vuis = viewList.UIStroke
 
-            local theme = window.Theme
-            local themeT = theme.Text
-            local themeS = theme.Stroke
-            local themeM = theme.Main
-
             orderUpdate(inst, options.Order)
-            inst.Separator.BackgroundColor3 = themeT
-            labelL.TextColor3 = themeT
-            licon.ImageColor3 = themeT
-            licon.Opened.ImageColor3 = themeT
-            viewList.BackgroundColor3 = themeS
-            viewLNC.TextColor3 = themeM
-            viewLNC.TextStrokeColor3 = themeS
-            viewLSVal.TextColor3 = themeM
-            viewLSVal.TextStrokeColor3 = themeS
-            vuis.Color = themeS
-
             if options.Value ~= false and typeof(options.Value) ~= "number" and typeof(options.Value) ~= "table" then
                 options.Value = tfind(options.Values, options.Value) or false
             end
@@ -8052,6 +8283,7 @@ local basicObjects = {
 
                     for _, child in viewLL:GetChildren() do
                         if child:IsA("GuiObject") then
+                            disconnectColorsFromWindow(self, child)
                             child:Destroy()
                         end
                     end
@@ -8070,8 +8302,16 @@ local basicObjects = {
                         safeReparent(row, viewLL)
                         row.Text = tostring(val)
                         row.Size = U2s(1, 1 / #options.Values)
-                        row.TextColor3 = ((options.Multi and tfind(options.Value, i)) or (not options.Multi and options.Value == i)) and themeM or themeT
-                        row.TextStrokeColor3 = themeS
+                        local rowIndex = i
+                        defer(connectColorsToWindow, self, {
+                            Main = {
+                                { row, "TextColor3", function(theme)
+                                    local selected = (options.Multi and tfind(options.Value, rowIndex)) or (not options.Multi and options.Value == rowIndex)
+                                    return selected and theme.Main or theme.Text
+                                end }
+                            },
+                            Stroke = { { row, "TextStrokeColor3" } }
+                        })
 
                         dc[#dc + 1] = row.MouseButton1Click:Connect(function()
                             if options.Multi then
@@ -8094,6 +8334,7 @@ local basicObjects = {
                                 options.Opened = not options.AutoHide and old ~= options.Value or options.AutoHide
                             end
 
+                            refreshColorsForObject(self)
                             local value = options.Value
                             local converted = self:Convert(value)
 
@@ -8117,6 +8358,7 @@ local basicObjects = {
 
                     for _, child in viewLL:GetChildren() do
                         if child:IsA("GuiObject") and tonumber(child.Name) and tonumber(child.Name) > #options.Values then
+                            disconnectColorsFromWindow(self, child)
                             child:Destroy()
                         end
                     end
@@ -8128,6 +8370,7 @@ local basicObjects = {
 
                 for _, child in viewLL:GetChildren() do
                     if child:IsA("GuiObject") then
+                        disconnectColorsFromWindow(self, child)
                         child:Destroy()
                     end
                 end
@@ -8196,6 +8439,19 @@ local basicObjects = {
             }, self)
 
             defer(hoverLogic, object, instance)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" },
+                    { instance.View.Bar.Progress, "TextColor3" }
+                },
+                Stroke = {
+                    { instance.View.Bar, "BackgroundColor3" },
+                    { instance.View.Bar.Progress, "TextStrokeColor3" },
+                    { instance.View.Bar.UIStroke, "Color" }
+                },
+                Main = { { instance.View.Bar.Fill, "BackgroundColor3" } }
+            })
 
             local sliding = false
             local bar = instance.View.Bar
@@ -8351,24 +8607,13 @@ local basicObjects = {
 
             local inst = self.Instance
             local view = inst.View
-            local theme = window.Theme
-            local themeT = theme.Text
-            local themeS = theme.Stroke
-
             local viewBar = view.Bar
             local viewLabel = view.Label
 
             local viewBarProgress = viewBar.Progress
             local viewBarFill = viewBar.Fill
 
-            inst.Separator.BackgroundColor3 = themeT
-            viewLabel.TextColor3 = themeT
-            viewBar.BackgroundColor3 = themeS
-            viewBarFill.BackgroundColor3 = theme.Main
-            viewBarProgress.TextColor3 = themeT
-            viewBarProgress.TextStrokeColor3 = themeS
             viewBar.Position = U2s(0.5, compact and 0.5 or 1.65)
-            viewBar.UIStroke.Color = themeS
             orderUpdate(inst, options.Order)
 
             inst.Visible = options.Visible
@@ -8462,6 +8707,19 @@ local basicObjects = {
             }, self)
 
             defer(hoverLogic, object, instance)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" },
+                    { instance.View.Bar, "PlaceholderColor3" },
+                    { instance.View.Bar, "TextColor3" },
+                    { instance.View.Bar.Placeholder, "TextColor3" }
+                },
+                Stroke = {
+                    { instance.View.Bar, "BackgroundColor3" },
+                    { instance.View.Bar.UIStroke, "Color" }
+                }
+            })
 
             local cons = { }
             defer(addCons, object, cons)
@@ -8556,22 +8814,11 @@ local basicObjects = {
             local view = inst.View
             local woptions = window.Options
 
-            local theme = window.Theme
-            local themeT = theme.Text
-            local themeS = theme.Stroke
-            
             local viewLabel = view.Label
             local viewBar = view.Bar
             local vbph = viewBar.Placeholder
             local vuis = viewBar.UIStroke
-            
-            inst.Separator.BackgroundColor3 = themeT
-            viewLabel.TextColor3 = themeT
-            viewBar.BackgroundColor3 = themeS
-            viewBar.PlaceholderColor3 = themeT
-            viewBar.TextColor3 = themeT
-            vbph.TextColor3 = themeT
-            vuis.Color = themeS
+
             orderUpdate(inst, options.Order)
 
             inst.Visible = options.Visible
@@ -8620,6 +8867,13 @@ local basicObjects = {
                 Class = self.Class
             }, self)
 
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.Label, "TextColor3" }
+                }
+            })
+
             local cons = { }
             defer(addCons, object, cons)
 
@@ -8649,10 +8903,6 @@ local basicObjects = {
             local window = getWindow(self)
             local inst = self.Instance
 
-            local themeT = window.Theme.Text
-            
-            inst.Separator.BackgroundColor3 = themeT
-            inst.Label.TextColor3 = themeT
             inst.Label.TextSize = y
 
             orderUpdate(inst, self.Options.Order)
@@ -8679,6 +8929,15 @@ local basicObjects = {
                 Class = self.Class
             }, self)
 
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Left, "BackgroundColor3" },
+                    { instance.View.Right, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" }
+                }
+            })
+
             local cons = { }
             defer(addCons, object, cons)
 
@@ -8704,10 +8963,6 @@ local basicObjects = {
             local parnt = self.Parent
             local ispgb = parnt.Class == "Groupbox"
 
-            inst.Separator.BackgroundColor3 = window.Theme.Text
-            inst.View.Left.BackgroundColor3 = window.Theme.Text
-            inst.View.Right.BackgroundColor3 = window.Theme.Text
-            inst.View.Label.TextColor3 = window.Theme.Text
             inst.View.Left.Visible = options.ShowStart
 
             orderUpdate(inst, options.Order)
@@ -8726,21 +8981,25 @@ local basicObjects = {
         },
         Init = function(self, options)
             local instance = getPlaceholder("Separator")
-            return addFunctions({
+            local object = addFunctions({
                 Options = options,
                 Instance = instance,
                 Class = self.Class
             }, self)
+
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.SeparatorMiddle, "BackgroundColor3" }
+                }
+            })
+
+            return object
         end,
         Refresh = function(self)
             local inst = self.Instance
             local options = self.Options
             local parnt = self.Parent
-            
-            local themeT = getWindow(self).Theme.Text
-            
-            inst.Separator.BackgroundColor3 = themeT
-            inst.SeparatorMiddle.BackgroundColor3 = themeT
 
             inst.Visible = options.Visible
             orderUpdate(inst, options.Order)
@@ -8768,6 +9027,7 @@ local basicObjects = {
             local old = self.Options.Value
             self.Options.Value = value
             self:Refresh()
+            refreshColorsForObject(self)
 
             if old ~= self.Options.Value then
                 self.Changed:Fire(self.Options.Value, self)
@@ -8789,6 +9049,34 @@ local basicObjects = {
 
             defer(hoverLogic, object, instance)
             defer(keybindSetup, object)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" },
+                    { instance.View.Icon.Frame.State, "BackgroundColor3", function(theme)
+                        return theme.Text:Lerp(theme.Main, 0.67):Lerp(theme.Stroke, options.Disabled and 0.5 or 0)
+                    end }
+                },
+                Main = {
+                    { instance.View.Icon, "ImageColor3" },
+                    { instance.View.Icon, "BackgroundColor3" },
+                    { instance.View.Icon.Frame, "BackgroundColor3", function(theme)
+                        local color = options.Value and theme.Main or theme.Stroke
+                        return color:Lerp(theme.Stroke, options.Disabled and 0.5 or 0)
+                    end, function(instance, property, color, _, colorChangeSpeed)
+                        local window = getWindow(object)
+
+                        local duration = colorChangeSpeed
+                            or (0.3 / handleAnimationSpeed(window.AnimationSpeed))
+
+                        tweenColorProperty(instance, property, color, duration)
+                    end }
+                },
+                Stroke = {
+                    { instance.View.Icon.UIStroke, "Color" },
+                    { instance.View.Icon.Frame.UIStroke, "Color" }
+                }
+            })
 
             local cons = { }
             defer(addCons, object, cons)
@@ -8815,6 +9103,7 @@ local basicObjects = {
 
             self.Options.Value = not not value
             self.Proxy:Refresh()
+            refreshColorsForObject(self)
 
             if not noCallback then
                 self:Call(self.Options.Value)
@@ -8858,18 +9147,7 @@ local basicObjects = {
 
             local window = getWindow(self)
             local woptions = window.Options
-            
-            local theme = window.Theme
-            local themeS = theme.Stroke
-            local themeT = theme.Text
-            local themeM = theme.Main
-            
-            inst.Separator.BackgroundColor3 = themeT
-            label.TextColor3 = themeT
-            vicon.ImageColor3 = themeM
-            vicon.BackgroundColor3 = themeM
-            vicon.UIStroke.Color = themeS
-            frState.BackgroundColor3 = themeT:Lerp(themeM, 0.67 --[[omg another 67]]):Lerp(themeS, options.Disabled and 0.5 or 0)
+
             vicon.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
 
             local strokes = not woptions.NoStrokes
@@ -8880,10 +9158,8 @@ local basicObjects = {
             uic.CornerRadius = Un(woptions.RoundEverything and 1 or 0, 0)
             frState.UICorner.CornerRadius = uic.CornerRadius
             uis.Enabled = strokes
-            uis.Color = themeS
-            
+
             local as = 0.3 / handleAnimationSpeed(window.AnimationSpeed)
-            tweenOnce(iconFrame, TIn(as), { BackgroundColor3 = (options.Value and themeM or themeS):Lerp(themeS, options.Disabled and 0.5 or 0) })
             tweenOnce(frState, TIn(as), { Position = U2s(options.Value and 1 or 0), AnchorPoint = V2n(options.Value and 1 or 0, 0) })
 
             if not isModern then
@@ -8934,6 +9210,17 @@ local basicObjects = {
             }, self)
 
             defer(hoverLogic, object, instance)
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { instance.Separator, "BackgroundColor3" },
+                    { instance.View.Label, "TextColor3" }
+                },
+                Main = { { instance.View.Display, "TextColor3" } },
+                Stroke = {
+                    { instance.View.Display.UIStroke, "Color" },
+                    { instance.View.Display, "BackgroundColor3" }
+                }
+            })
 
             local cons = { }
             defer(addCons, object, cons)
@@ -9000,7 +9287,7 @@ local basicObjects = {
 
             local window = getWindow(self)
             local woptions = window.Options
-            
+
             local inst = self.Instance
             local view = inst.View
             local viewLabel = view.Label
@@ -9016,18 +9303,9 @@ local basicObjects = {
             inst.Size = U2n(1, 0, 0, y)
             view.Size = U2n(100, 0, 0, y2)
             view.Position = U2n(0, x, 0.5, 0)
-            
-            local theme = window.Theme
-            local themeT = theme.Text
-            local themeS = theme.Stroke
 
-            inst.Separator.BackgroundColor3 = themeT
-            viewLabel.TextColor3 = themeT
-            viewDisplay.TextColor3 = theme.Main
-            vuis.Color = themeS
             viewDisplay.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
             vuis.Enabled = not woptions.NoStrokes
-            viewDisplay.BackgroundColor3 = themeS
 
             local v = options.Value
             if typeof(v) == "EnumItem" then
@@ -9071,6 +9349,17 @@ local groupBoxFuncs = {
         }, self)
 
         options._Objects = 0
+        defer(connectColorsToWindow, object, {
+            Text = {
+                { groupbox.Holder, "BackgroundColor3" },
+                { groupbox.Holder.Title, "TextColor3" }
+            },
+            Stroke = {
+                { groupbox.Holder.UIStroke, "Color" },
+                { groupbox.Holder.Contents, "BackgroundColor3" }
+            },
+            Main = { { groupbox.Holder.Frame, "BackgroundColor3" } }
+        })
         defer(addPossibleTranslations, object)
 
         local cons = { }
@@ -9112,20 +9401,11 @@ local groupBoxFuncs = {
         local holder = self.Holder.Holder
         local options = self.Options
         local woptions = window.Options
-        local theme = window.Theme
-        local themeT = theme.Text
-        local themeS = theme.Stroke
-        
         local hp = holder.Parent
         local hc = holder.Contents
         local huis = holder.UIStroke
         local ht = holder.Title
 
-        holder.BackgroundColor3 = themeT
-        huis.Color = themeS
-        hc.BackgroundColor3 = themeS
-        holder.Frame.BackgroundColor3 = window.Theme.Main
-        ht.TextColor3 = themeT
         holder.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
         hc.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
         huis.Enabled = not woptions.NoStrokes
@@ -9152,6 +9432,18 @@ local groupBoxFuncs = {
 }
 
 local function initTabButton(tabButton, object, cons, options)
+    local colorMap = {
+        Main = { { tabButton, "BackgroundColor3" }, { tabButton.Indicator, "BackgroundColor3" } },
+        Text = {
+            { tabButton.Filler, "BackgroundColor3" },
+            { tabButton.ButtonItself.Title, "TextColor3" },
+            { tabButton.ButtonItself.Icon, "ImageColor3", function(theme) return options.RecolorIcon and theme.Text or C3n(1, 1, 1) end }
+        }
+    }
+    if object.Class == "Tab" then
+        tinsert(colorMap.Main, { object.Holder, "ScrollBarImageColor3" })
+    end
+    defer(connectColorsToWindow, object, colorMap)
     defer(hoverLogic, object, tabButton)
 
     cons[#cons + 1] = tabButton.MouseButton1Down:Connect(function()
@@ -9173,7 +9465,13 @@ local function initTabButton(tabButton, object, cons, options)
 
     cons[#cons + 1] = tabButton.MouseButton1Click:Connect(function()
         spawn(playSound, "Click", object)
-        object:SwitchTo()
+
+        local window = getWindow(object)
+        if not window or window.CurrentTab ~= object.Proxy then
+            object:SwitchTo()
+        else
+            window:SetTab(nil)
+        end
     end)
 
     cons[#cons + 1] = tabButton.ButtonItself.Icon.Changed:Connect(function()
@@ -9278,16 +9576,9 @@ local tabFuncs = {
             while wait(1) and not object.Closed do
                 cnt = (cnt + 1) % 5
 
-                if cnt == 0 then
+                if cnt == 0 and tab:FindFirstChild("MobileSizeFix") then
                     tab.MobileSizeFix.Size = U2n(mrandom(), 0, 0, 1)
                 end
-            end
-        end)
-
-        defer(function()
-            render()
-            if not object.Parent.Self.CurrentTab then
-                object.Proxy:SwitchTo()
             end
         end)
 
@@ -9334,22 +9625,10 @@ local tabFuncs = {
         setIcon(options.Icon, icons, prox, bi.Icon)
         bi.Title.Text = translate(self, "Text")
         bi.Visible = options.Visible
-        
-        local theme = window.Theme
-        local themeM = theme.Main
-        local themeT = theme.Text
 
-        tb.BackgroundColor3 = themeM
-        tb.Indicator.BackgroundColor3 = themeM
-        tb.Filler.BackgroundColor3 = themeT
         setIcon(options.Image, backgrounds, prox, tb.ImageLabel)
         orderUpdate(tb, tonumber(options.Order) or 0)
-        bi.Icon.ImageColor3 = options.RecolorIcon and themeT or C3n(1, 1, 1)
-        bi.Title.TextColor3 = themeT
-
         if class == "Tab" then
-            holder.ScrollBarImageColor3 = themeM
-
             local ySize = 0
             for i, v in holder.NormalZone:GetChildren() do
                 if v:IsA("GuiObject") and v.Visible then
@@ -9447,12 +9726,6 @@ local customTabFuncs = {
         defer(addCons, object, cons)
         initTabButton(tabButton, object, cons, options)
 
-        defer(function()
-            if not object.Parent.CurrentTab then
-                object.Proxy:SwitchTo()
-            end
-        end)
-
         return object
     end,
     Set = function(self, value)
@@ -9508,11 +9781,11 @@ end
 
 local function makeDraggable(instance, object, cons, dragTarget, resetDelta, noSmooth)
     dragTarget = dragTarget or instance
-    
+
     local dragPos, dragStartPosition, dragConnection, dragUpConnection
     local con = instance.MouseButton1Down:Connect(function()
         local window = getWindow(object)
-        
+
         dragStartPosition = dragTarget.Position
         dragPos = V2n(mouse.X, mouse.Y)
 
@@ -9529,11 +9802,11 @@ local function makeDraggable(instance, object, cons, dragTarget, resetDelta, noS
         dragConnection = mouse.Move:Connect(function()
             local mouseVec = V2n(mouse.X, mouse.Y)
             local delta = mouseVec - dragPos
-            
+
             if resetDelta then
                 dragPos = mouseVec
             end
-            
+
             if not noSmooth then
                 dragTarget:TweenPosition(U2n(dragStartPosition.X.Scale, dragStartPosition.X.Offset + delta.X, dragStartPosition.Y.Scale, dragStartPosition.Y.Offset + delta.Y), nil, nil, 0.35 / handleAnimationSpeed(window.Options.AnimationSpeed), true)
             else
@@ -9607,6 +9880,15 @@ local floatingLabel = {
         }, self)
 
         defer(addCons, object, cons)
+        defer(connectColorsToWindow, object, {
+            Back = { { floatingLabel.Contents, "BackgroundColor3" } },
+            Stroke = { { floatingLabel.Contents.OutsideStroke, "Color" } },
+            Text = {
+                { floatingLabel.Contents.Contents.Title, "TextColor3" },
+                { floatingLabel.Contents.Contents.Text, "TextColor3" }
+            },
+            Main = { { floatingLabel.Contents.TopNeon, "BackgroundColor3" } }
+        })
 
         local canChange = true
         cons[#cons + 1] = floatingLabel.Changed:Connect(function()
@@ -9680,12 +9962,12 @@ local floatingLabel = {
         local options = self.Options
 
         safeReparent(l, gui.FloatingLabels)
-        
+
         local lc = l.Contents
         local lcc = lc.Contents
         local lcct = lcc.Title
         local lcct2 = lcc.Text
-        
+
         l.AnchorPoint = options.AnchorPoint
         l.Visible = options.Visible and (#lcct2.Text ~= 0 or #lcct.Text ~= 0)
 
@@ -9702,16 +9984,9 @@ local floatingLabel = {
             lcct.Text = options.Title:sub(1, 199999)
             self:_Rescale()
         end
-        
-        local theme = window.Theme
-        local themeT = theme.Text
+
         local woptions = window.Options
 
-        lc.BackgroundColor3 = theme.Back
-        lc.OutsideStroke.Color = theme.Stroke
-        lcct.TextColor3 = themeT
-        lcct2.TextColor3 = themeT
-        lc.TopNeon.BackgroundColor3 = theme.Main
         lc.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
         lc.OutsideStroke.Enabled = not woptions.NoStrokes
     end
@@ -9734,6 +10009,15 @@ local tabHeaderFuncs = {
             Class = self.Class
         }, self)
 
+        defer(connectColorsToWindow, object, {
+            Text = {
+                { instance.Separator, "BackgroundColor3" },
+                { instance.View.Left, "BackgroundColor3" },
+                { instance.View.Right, "BackgroundColor3" },
+                { instance.View.Label, "TextColor3" }
+            }
+        })
+
         local cons = { }
         defer(addCons, object, cons)
 
@@ -9755,16 +10039,11 @@ local tabHeaderFuncs = {
     Refresh = function(self)
         local inst = self.Instance
         local options = self.Options
-        
-        local themeT = getWindow(self).Theme.Text
+
         local view = inst.View
         local left = view.Left
         local label = view.Label
 
-        inst.Separator.BackgroundColor3 = themeT
-        left.BackgroundColor3 = themeT
-        view.Right.BackgroundColor3 = themeT
-        label.TextColor3 = themeT
         left.Visible = options.ShowStart
 
         orderUpdate(inst, options.Order)
@@ -9783,11 +10062,20 @@ local tabSeparatorFuncs = {
     },
     Init = function(self, options)
         local instance = getPlaceholder("TabSeparator")
-        return addFunctions({
+        local object = addFunctions({
             Options = options,
             Instance = instance,
             Class = self.Class
         }, self)
+
+        defer(connectColorsToWindow, object, {
+            Text = {
+                { instance.Separator, "BackgroundColor3" },
+                { instance.SeparatorMiddle, "BackgroundColor3" }
+            }
+        })
+
+        return object
     end,
     Refresh = function(self)
         local inst = self.Instance
@@ -9795,10 +10083,6 @@ local tabSeparatorFuncs = {
         local options = self.Options
 
         local spm = inst.SeparatorMiddle
-        local themeT = window.Theme.Text
-
-        inst.Separator.BackgroundColor3 = themeT
-        spm.BackgroundColor3 = themeT
 
         inst.Visible = options.Visible
         orderUpdate(inst, options.Order)
@@ -9816,10 +10100,10 @@ local neverShowAgainCache do
             neverShowAgainCache = r
         end
     end
-    
+
     if typeof(neverShowAgainCache) ~= "table" then
         neverShowAgainCache = { }
-        
+
         if wf then
             pcall(wf, nsaCacheRoute, neverShowAgainCache)
         end
@@ -9839,7 +10123,7 @@ local iwnFunctions = {
     Init = function(self, options)
         local instance = getPlaceholder("IWNotification")
         instance.GroupTransparency = 1
-        
+
         local destroying = event.new()
         local object = addFunctions({
             Options = options,
@@ -9847,13 +10131,13 @@ local iwnFunctions = {
             Class = self.Class,
             Destroying = destroying
         }, self)
-        
+
         local nsaf = options.NeverShowAgainFlag
         local nsa = neverShowAgainCache[nsaf]
         if nsa ~= nil then
             options._returned = nsa
             defer(destroying.Fire, destroying)
-            
+
             return
         end
 
@@ -9864,62 +10148,77 @@ local iwnFunctions = {
                 castCircle(instance.ButtonsZone.Toggle, getWindow(object.Proxy))
             end)
             
+            localCons[#localCons + 1] = instance.ButtonsZone.Toggle.MouseEnter:Connect(function()
+                spawn(playSound, "Hover", object)
+            end)
+
             local function refreshState()
                 tweenOnce(instance.ButtonsZone.Toggle.View.Icon, TIn(0.3 / handleAnimationSpeed(getWindow(object.Proxy).AnimationSpeed)), { ImageTransparency = nsaState and 0 or 1 })
             end
-            
+
             localCons[#localCons + 1] = instance.ButtonsZone.Toggle.MouseButton1Click:Connect(function()
+                spawn(playSound, "Click", object)
                 nsaState = not nsaState
                 refreshState()
             end)
-            
+
             defer(refreshState)
         end
-        
+
         local b1 = getPlaceholder("IWNButton")
         b1.Parent = instance.ButtonsZone.Buttons
         b1.TextButton.Label.Text = "OK"
         b1.TextButton.ImageLabel.Image = "rbxassetid://130396712201457"
         orderUpdate(b1, 1)
-        
+
         options._b1 = b1
 
         localCons[#localCons + 1] = b1.TextButton.MouseButton1Down:Connect(function()
             castCircle(b1.TextButton, getWindow(object))
         end)
-        
+
         localCons[#localCons + 1] = b1.TextButton.MouseButton1Click:Once(function()
+            spawn(playSound, "Click", object)
             options._returned = true
             destroying:Fire()
         end)
-        
+
+        localCons[#localCons + 1] = b1.TextButton.MouseEnter:Connect(function()
+            spawn(playSound, "Hover", object)
+        end)
+
         if options.HasButtons then
             local b2 = getPlaceholder("IWNButton")
             b2.Parent = instance.ButtonsZone.Buttons
             b2.TextButton.Label.Text = "NO"
             b2.TextButton.ImageLabel.Image = "rbxassetid://10152135063"
             options._b2 = b2
-            
+
             localCons[#localCons + 1] = b2.TextButton.MouseButton1Down:Connect(function()
                 castCircle(b2.TextButton, getWindow(object))
             end)
-            
+
             localCons[#localCons + 1] = b2.TextButton.MouseButton1Click:Once(function()
+                spawn(playSound, "Click", object)
                 options._returned = false
                 destroying:Fire()
             end)
+
+            localCons[#localCons + 1] = b2.TextButton.MouseEnter:Connect(function()
+                spawn(playSound, "Hover", object)
+            end)
         end
-        
+
         destroying:Once(function()
             getWindow(object)._WindowNotificationRemoving:Fire(object.Proxy)
-            
+
             if nsaState then
                 neverShowAgainCache[nsaf] = false
                 if wf then
                     pcall(wf, nsaCacheRoute, neverShowAgainCache)
                 end
             end
-            
+
             wait()
 
             for i, v in localCons do
@@ -9930,10 +10229,35 @@ local iwnFunctions = {
 
             localCons = nil
         end)
-        
+
+        defer(connectColorsToWindow, object, {
+            Back = { { instance, "BackgroundColor3" } },
+            Stroke = {
+                { instance.Shading, "BackgroundColor3" },
+                { instance.UIStroke, "Color" },
+                { instance.ButtonsZone.Toggle.View.Icon.UIStroke, "Color" }
+            },
+            Text = {
+                { instance.TextZone.Text, "TextColor3" },
+                { instance.TextZone.Title, "TextColor3" },
+                { instance.ButtonsZone.Toggle.View.Label, "TextColor3" }
+            },
+            Main = {
+                { instance.ButtonsZone.Toggle.View.Icon, "ImageColor3" },
+                { options._b1, "GroupColor3" }
+            }
+        })
+        if options._b2 then
+            defer(connectColorsToWindow, object, {
+                Text = {
+                    { options._b2, "GroupColor3", function(theme) return theme.Text:Lerp(theme.Stroke, 0.5) end }
+                }
+            })
+        end
+
         defer(themeSync, object, localCons)
         defer(addPossibleTranslations, object)
-        
+
         return object
     end,
     Refresh = function(self)
@@ -9945,44 +10269,28 @@ local iwnFunctions = {
         inst.ButtonsZone.Toggle.Visible = options.NeverShowAgainFlag ~= nil
 
         if not options._exists then return end
-        
+
         local window = getWindow(self.Proxy or self)
         if not window then return end
-        
+
         local woptions = window.Options
 
-        local themeT = woptions.Theme.Text
-        local themeM = woptions.Theme.Main
-        local themeB = woptions.Theme.Back
-        local themeS = woptions.Theme.Stroke
-        
-        inst.BackgroundColor3 = themeB
-        inst.Shading.BackgroundColor3 = themeS
-        inst.UIStroke.Color = themeS
         inst.UICorner.CornerRadius = Un(0, woptions.CornerRadius * 0.1)
-        inst.TextZone.Text.TextColor3 = themeT
-        inst.TextZone.Title.TextColor3 = themeT
-        inst.ButtonsZone.Toggle.View.Icon.ImageColor3 = themeM
-        inst.ButtonsZone.Toggle.View.Icon.UIStroke.Color = themeS
         inst.ButtonsZone.Toggle.View.Icon.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
-        inst.ButtonsZone.Toggle.View.Label.TextColor3 = themeT
-        
-        options._b1.GroupColor3 = themeM
         options._b1.TextButton.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
         options._b1.TextButton.UIStroke.Enabled = not woptions.NoStrokes
-        
+
         local tr = translate(self, "Dialog1", true)
         if #tr == 0 then
             tr = UI_DEBUG.EN_DIALOG_BUTTONS[1]
         end
-        
+
         options._b1.TextButton.Label.Text = tr
-        
+
         if options._b2 then
-            options._b2.GroupColor3 = themeT:Lerp(themeS, 0.5)
             options._b2.TextButton.UICorner.CornerRadius = cornerState[woptions.RoundEverything]
             options._b2.TextButton.UIStroke.Enabled = not woptions.NoStrokes
-            
+
             tr = translate(self, "Dialog2", true)
             if #tr == 0 then
                 tr = UI_DEBUG.EN_DIALOG_BUTTONS[2]
@@ -9999,7 +10307,7 @@ local handleWNS do
         local offs = window.Window.RealWindow.Contents.NotificationsOverlay.Offsetter
         offs:TweenPosition(U2o(0, (max(qSize, 1) - 1) * -2))
         tweenOnce(offs.Parent, TIn(0.15), { BackgroundTransparency = qSize > 0 and 0.25 or 1 })
-        
+
         if qSize > 0 then
             for i = 1, qSize do
                 local v = wnsq[i]
@@ -10008,7 +10316,7 @@ local handleWNS do
                 v._exists = true
                 local v = v.Instance
                 safeReparent(v, offs)
-                
+
                 tweenOnce(v, TIn(0.15), { GroupTransparency = 0 })
                 v:TweenSizeAndPosition(U2n(0.2, 220 - ((i - 1) * 10), 0.2, 120), U2n(0.5, 0, 0.5, (i - 1) * 4), nil, nil, 0.15, true)
                 v.Shading.BackgroundTransparency = 1 - ((i - 1) / 3)
@@ -10016,7 +10324,7 @@ local handleWNS do
             end
         end
     end
-    
+
     local function destroyIWN(iwn)
         local inst = iwn.Instance
         inst.ZIndex = 110
@@ -10024,12 +10332,12 @@ local handleWNS do
         wait(0.2)
         inst:Destroy()
     end
-    
+
     handleWNS = function(wnsQueue, window, iwn, destroyed)
         if destroyed then
             spawn(destroyIWN, iwn)
         end
-        
+
         refreshWNSQueue(wnsQueue, window)
     end
 end
@@ -10048,7 +10356,7 @@ local function refreshBlurs(blurs, enabled)
                     break
                 end
             end
-        
+
             blur[2].Intensity = enabled and (blur[4] or blur[5] or 1.5) or 0
         else
             blur[2].Intensity = 0
@@ -10199,7 +10507,7 @@ local windowFuncs; windowFuncs = {
                 window.Options.LargeModernToggles = false
                 window.Options.InfoLabelExtraAntiRich = true
             end
-            
+
             if type >= 8 then
                 window.Options.EnableUIBlur = theme["31"] == 1
                 window.Options.BlurProfile = theme["32"] == 1
@@ -10399,26 +10707,52 @@ local windowFuncs; windowFuncs = {
         local cons = { }
 
         local first = true
-        local function applyTheme()
+        local function applyTheme(colorChangeSpeed)
             if options.KeepTheme and not first then return end
+
+            local initial = first
             first = false
 
             local options = self.Options
-            cp.Contents.BackgroundColor3 = self.Theme.Back
-            cp.Contents.TopNeon.BackgroundColor3 = self.Theme.Main
-            cp.Contents.OutsideStroke.Color = self.Theme.Stroke
+
+            local function setColor(instance, property, color)
+                if not initial and colorChangeSpeed then
+                    local success = pcall(
+                        tweenColorProperty,
+                        instance,
+                        property,
+                        color,
+                        colorChangeSpeed
+                    )
+
+                    if success then return end
+                end
+
+                instance[property] = color
+            end
+
+            setColor(cp.Contents, "BackgroundColor3", self.Theme.Back)
+            setColor(cp.Contents.TopNeon, "BackgroundColor3", self.Theme.Main)
+            setColor(cp.Contents.OutsideStroke, "Color", self.Theme.Stroke)
+
             cp.Contents.OutsideStroke.Enabled = not options.NoStrokes
             cp.Contents.UICorner.CornerRadius = cornerState[options.RoundEverything]
-            cp.Contents.Contents.TopbarZone.Title.TextColor3 = self.Theme.Text
-            cp.Contents.Contents.TopbarZone.Right.Close.ImageLabel.ImageColor3 = self.Theme.Text
-            cp.Contents.Contents.Display.ColorZone.HUEZone.UIStroke.Color = self.Theme.Stroke
-            cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor.BackgroundColor3 = self.Theme.Text
-            cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor.UIStroke.Color = self.Theme.Stroke
-            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UIStroke.Color = self.Theme.Stroke
-            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor.BackgroundColor3 = self.Theme.Text
-            cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor.UIStroke.Color = self.Theme.Stroke
-            cp.Contents.Contents.Display.ColorZone.Preview.UIStroke.Color = self.Theme.Stroke
+
+            setColor(cp.Contents.Contents.TopbarZone.Title, "TextColor3", self.Theme.Text)
+            setColor(cp.Contents.Contents.TopbarZone.Right.Close.ImageLabel, "ImageColor3", self.Theme.Text)
+
+            setColor(cp.Contents.Contents.Display.ColorZone.HUEZone.UIStroke, "Color", self.Theme.Stroke)
+            setColor(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor, "BackgroundColor3", self.Theme.Text)
+            setColor(cp.Contents.Contents.Display.ColorZone.HUEZone.Cursor.UIStroke, "Color", self.Theme.Stroke)
+
+            setColor(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UIStroke, "Color", self.Theme.Stroke)
+            setColor(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor, "BackgroundColor3", self.Theme.Text)
+            setColor(cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.Cursor.UIStroke, "Color", self.Theme.Stroke)
+
+            setColor(cp.Contents.Contents.Display.ColorZone.Preview.UIStroke, "Color", self.Theme.Stroke)
+
             cp.Contents.Contents.TopbarZone.Title.Text = options.Text or "Color Picker"
+
             cp.Contents.Contents.Display.ColorZone.Preview.UICorner.CornerRadius = cornerState[options.RoundEverything]
             cp.Contents.Contents.Display.ColorZone.HUEZone.UICorner.CornerRadius = cornerState[options.RoundEverything]
             cp.Contents.Contents.Display.ColorZone.PickerZone.Contents.UICorner.CornerRadius = cornerState[options.RoundEverything]
@@ -10435,21 +10769,24 @@ local windowFuncs; windowFuncs = {
             cp.Contents.Contents.Display.BottomZone.TextBoxes.G.UIStroke.Enabled = not options.NoStrokes
             cp.Contents.Contents.Display.BottomZone.TextBoxes.B.UIStroke.Enabled = not options.NoStrokes
 
-            for i, v in cp.Contents.Contents.Display.BottomZone.TextBoxes:GetChildren() do
+            for _, v in cp.Contents.Contents.Display.BottomZone.TextBoxes:GetChildren() do
                 if v:IsA("TextButton") then
-                    v.BackgroundColor3 = self.Theme.Stroke
-                    v.UIStroke.Color = self.Theme.Stroke
-                    v.TextBox.TextColor3 = self.Theme.Text
-                    v.TextLabel.TextColor3 = self.Theme.Text
+                    setColor(v, "BackgroundColor3", self.Theme.Stroke)
+                    setColor(v.UIStroke, "Color", self.Theme.Stroke)
+                    setColor(v.TextBox, "TextColor3", self.Theme.Text)
+                    setColor(v.TextLabel, "TextColor3", self.Theme.Text)
                 end
             end
 
-            cp.Contents.Contents.Display.BottomZone.TextButton.BackgroundColor3 = self.Theme.Text
-            cp.Contents.Contents.Display.BottomZone.TextButton.TextColor3 = self.Theme.Text
-            cp.Contents.Contents.Display.BottomZone.TextButton.UIStroke.Color = self.Theme.Stroke
+            setColor(cp.Contents.Contents.Display.BottomZone.TextButton, "BackgroundColor3", self.Theme.Text)
+            setColor(cp.Contents.Contents.Display.BottomZone.TextButton, "TextColor3", self.Theme.Text)
+            setColor(cp.Contents.Contents.Display.BottomZone.TextButton.UIStroke, "Color", self.Theme.Stroke)
         end
 
-        cons[#cons + 1] = self.ThemeChanged:Connect(applyTheme)
+        cons[#cons + 1] = self.ThemeChanged:Connect(function()
+            applyTheme(self.Options.ColorChangeSpeed)
+        end)
+        
         applyTheme()
 
         cp.Size = U2o(50, 50)
@@ -10722,7 +11059,7 @@ local windowFuncs; windowFuncs = {
                 pick = false
                 done = true
             end)
-            
+
             notif.Background.Holder.Buttons.No.Visible = options.HasButtons
 
             spawn(function()
@@ -10787,6 +11124,7 @@ local windowFuncs; windowFuncs = {
         MobileButtonVisible = false,
         MobileButtonAlwaysVisible = false,
         AnimationSpeed = 1,
+        ColorChangeSpeed = 0.3,
         NeonThickness = 1,
         BackgroundTransparency = 0,
         ImageTransparency = 0.85,
@@ -10834,18 +11172,18 @@ local windowFuncs; windowFuncs = {
     WindowNotification = function(self, ...)
         local object = newObject(iwnFunctions, self, ...)
         if not object then return false end
-        
+
         local options = object.Options
-        
+
         local returned = options._returned
         if returned ~= nil then
             if options.HasButtons then
                 return returned
             end
-            
+
             return
         end
-        
+
         self._WindowNotificationAdded:Fire(object)
         if options.HasButtons then
             while options._returned == nil do
@@ -10865,29 +11203,29 @@ local windowFuncs; windowFuncs = {
         safeReparent(sounds, window)
 
         local destroying = event.new()
-        
+
         local cursorEffects = {
             Stroke = { cursorLib:Outline() }
         }
-        
+
         local effectsSum = { }
         for _, v in cursorEffects do
             for _, val in v do
                 effectsSum[#effectsSum + 1] = val
             end
         end
-        
+
         local cursor = cursorLib.new(effectsSum)
         cursorEffects.Main = { cursor }
-        
+
         local cons = { }
-        
+
         local wna = event.new()
         local wnr = event.new()
-        
+
         local wns = { }
         local blurs = { }
-        
+
         local object = addFunctions({
             Options = options,
             Window = window,
@@ -10898,6 +11236,9 @@ local windowFuncs; windowFuncs = {
             OnRefresh = event.new(),
             Defaults = { },
             Counters = { },
+            ColorMap = { },
+            ColorMapOwners = { },
+            ColorMapLookup = { },
             PossibleLanguages = { "EN" },
             _Connections = cons,
             _Blurs = blurs,
@@ -10931,17 +11272,17 @@ local windowFuncs; windowFuncs = {
             _WindowNotificationAdded = wna,
             _WindowNotificationRemoving = wnr
         }, self)
-        
+
         cons[#cons + 1] = wna:Connect(function(inWindowNotification)
             wns[#wns + 1] = inWindowNotification
             handleWNS(wns, object.Proxy or object, inWindowNotification, false)
-            
+
             inWindowNotification._con = destroying:Once(function()
                 inWindowNotification._returned = false
                 inWindowNotification.Destroying:Fire()
             end)
         end)
-        
+
         cons[#cons + 1] = wnr:Connect(function(inWindowNotification)
             inWindowNotification._con:Disconnect()
             tremove(wns, tfind(wns, inWindowNotification))
@@ -10967,22 +11308,22 @@ local windowFuncs; windowFuncs = {
         end)
 
         object._PrevLang = options.Language
-        
+
         cons[#cons + 1] = window.RealWindow.Contents.NotificationsOverlay.Changed:Connect(function()
             local v = window.RealWindow.Contents.NotificationsOverlay.BackgroundTransparency < 0.98
             window.RealWindow.Contents.NotificationsOverlay.Visible = v
-            
+
             if not blurs.Display or not blurs.Display[1] then return end
-            
+
             blurs.Display[1].IWN = v
             blurs.BackgroundImage[1].IWN = v
             blurs.Topbar[1].IWN = v
             blurs.KeySystem[1].IWN = v
             blurs.SettingsOverlay[1].IWN = v
-            
+
             refreshBlurs(blurs, options.EnableUIBlur)
         end)
-        
+
         window.RealWindow.Contents.NotificationsOverlay.BackgroundTransparency = 1
 
         local titleZone = window.RealWindow.Contents.TopbarZone.TitleZone
@@ -11012,6 +11353,10 @@ local windowFuncs; windowFuncs = {
             window.RealWindow.Contents.DisplayBlur.Downsampler.Display.Size = U2n(1, 0, 1, isVisible and -15 or 0)
         end)
         
+        local speed = tonumber(options.ColorChangeSpeed) or 0.3
+        if speed ~= speed then speed = 0.3 end
+        options.ColorChangeSpeed = clamp(speed, 0.005, 2)
+
         cons[#cons + 1] = window.MouseEnter:Connect(function()
             if options.Visible then
                 cursorLib:SetActive(cursor)
@@ -11078,10 +11423,7 @@ local windowFuncs; windowFuncs = {
             end)
         end)
 
-        local dontRefresh = false
         cons[#cons + 1] = object.ThemeChanged:Connect(function(theme)
-            if dontRefresh then return end
-            
             for cat, objs in cursorEffects do
                 local col = theme[cat]
                 for _, obj in objs do
@@ -11089,9 +11431,7 @@ local windowFuncs; windowFuncs = {
                 end
             end
 
-            dontRefresh = true
-            object.Proxy:RefreshAll()
-            dontRefresh = false
+            refreshColorsForWindow(object.Proxy or object, theme)
         end)
 
         local shOpen = false
@@ -11162,7 +11502,7 @@ local windowFuncs; windowFuncs = {
                         object.Proxy:InWindowNotification({ Title = "Copy failed", Text = "Unable to copy Discord server link to clipboard!\n" .. options.Discord })
                     end
                 end
-                
+
                 if request and options.Discord:split("gg/")[2] then
                     pcall(request, {
                         Url = 'http://127.0.0.1:6463/rpc?v=1',
@@ -11184,7 +11524,7 @@ local windowFuncs; windowFuncs = {
         local s = window.RealWindow.Contents.TopbarZone.Right.Settings
         local so = window.RealWindow.Contents.SettingsOverlay
         local soshi = so.SettingsHub.Image
-        
+
         so.Visible = false
         so.SettingsHub.AnchorPoint = V2n(0, 0)
         so.BackgroundTransparency = 1
@@ -11211,15 +11551,15 @@ local windowFuncs; windowFuncs = {
 
         cons[#cons + 1] = s.MouseButton1Click:Connect(function()
             shOpen = not shOpen
-            
+
             if blurs.Display and blurs.Display[1] then
                 blurs.Display[1].SH = shOpen
                 blurs.BackgroundImage[1].SH = shOpen
                 blurs.SettingsBackgroundImage[1].SH = shOpen
-            
+
                 refreshBlurs(blurs, options.EnableUIBlur)
             end
-            
+
             if shOpen then
                 so.Visible = true
 
@@ -11245,7 +11585,7 @@ local windowFuncs; windowFuncs = {
                 blurs.Display[1].SH = shOpen
                 blurs.BackgroundImage[1].SH = shOpen
                 blurs.SettingsBackgroundImage[1].SH = shOpen
-                
+
                 refreshBlurs(blurs, options.EnableUIBlur)
             end
 
@@ -11287,7 +11627,7 @@ local windowFuncs; windowFuncs = {
 
         local buffer = { }
         local cnt = 0
-        
+
         myCons[#myCons + 1] = rs.RenderStepped:Connect(function(dt)
             local fps = 1 / dt
             if fps > 100000 then
@@ -11317,7 +11657,7 @@ local windowFuncs; windowFuncs = {
 
             local inserted2 = false
             local inserts = 0
-            
+
             if options.ShowFPS then
                 inserted2 = true
                 inserts = 1
@@ -11339,7 +11679,7 @@ local windowFuncs; windowFuncs = {
 
             if options.ShowPing then
                 inserts = 1
-                
+
                 local pingS = round(ping * 1000)
                 pingS = "Ping: " .. (pingS >= 0 and paintRichText(tostring(pingS) .. " ms", C3n(0, 1):Lerp(C3n(1), clamp(pingS / 1000, 0, 1))) or paintRichText("Disconnected", C3n(1)))
 
@@ -11350,12 +11690,12 @@ local windowFuncs; windowFuncs = {
                     lines[#lines] ..= " | " .. pingS
                 end
             end
-            
+
             --[[if options.ShowCPUSpeed then
                 inserts += 1
                 tinsert(lines, "CPU: " .. paintRichText((round(CPUSpeed * 100) / 100) .. " " .. CPUPrefix, C3n(1):Lerp(C3n(0, 1), clamp(RealCPUSpeed / 3.25, 0, 1))))
             end]]
-            
+
             if inserts == 2 and options.ShowGaps and (options.ShowPlayers or options.ShowTime) then
                 tinsert(lines, "")
             end
@@ -11390,31 +11730,31 @@ local windowFuncs; windowFuncs = {
         for i, v in myCons do
             cons[#cons + 1] = v
         end
-        
+
         local pb = window.RealWindow.Contents.Display.PageButtons
         local rz = pb.Resizer
         local pgs = pb.Parent.Pages
-        
+
         makeDraggable(rz, object, cons, nil, true, true)
-        
+
         local size = 145
         local minSize = 100
         local maxSize = 200
-        
+
         local oldPos = rz.Position
-        
+
         local ignore = false
         cons[#cons + 1] = rz:GetPropertyChangedSignal("Position"):Connect(function()
             if ignore then
                 ignore = false
                 return
             end
-            
+
             size = clamp(size + rz.Position.X.Offset, minSize, maxSize)
-            
+
             ignore = true
             rz.Position = oldPos
-            
+
             pb.Size = U2n(0, size, 1, -40)
             pgs.Size = U2n(1, -size, 1, -40)
         end)
@@ -11428,53 +11768,53 @@ local windowFuncs; windowFuncs = {
                 object:RefreshUserProfile()
             end
         end)
-        
+
         local ksb = window.RealWindow.Contents.KeySystemOverlay.Canvas.Holder.Upscaler.Contents.Button
         local kst = ksb.Parent.Bar.Bar.Icon.TextBox
-        
+
         local function resetKSB()
             local options = object.Proxy.Options
             options._ksb = false
             options._kss = options._ksd and 7 or #kst.Text == 0 and 1 or 4
             object:Refresh()
         end
-        
+
         cons[#cons + 1] = ksb.Parent.Bar.MouseButton1Click:Connect(function()
             kst:CaptureFocus()
         end)
-        
+
         cons[#cons + 1] = ksb.MouseButton1Down:Connect(function()
             castCircle(ksb, object.Proxy)
         end)
-        
+
         cons[#cons + 1] = kst.Changed:Connect(function()
             local options = object.Proxy.Options
             if not options._ksa or options._ksb then return end
             resetKSB()
         end)
-        
+
         cons[#cons + 1] = ksb.MouseButton1Click:Connect(function()
             local options = object.Proxy.Options
             if not options._ksa or options._ksb then return end
-            
+
             options._ksb = true
             local doDelay = true
-            
+
             if #kst.Text == 0 then
                 kst.Text = options._ksa
-                
+
                 if toclip then
                     spawn(pcall, toclip, options._ksa)
                     options._kss = 2
                 else
                     options._kss = 3
                 end
-                
+
                 object:Refresh()
             else
                 options._kss = 5
                 object:Refresh()
-                
+
                 local s, r = pcall(options.KeyCallback, kst.Text, object.Proxy)
                 if not s or not r then
                     options._kss = 6
@@ -11483,15 +11823,15 @@ local windowFuncs; windowFuncs = {
                     doDelay = false
                     options._kss = 7
                     object:Refresh()
-                    
+
                     wait(0.75)
-                    
+
                     blurs.KeySystem[1].KS = true
                     object:Refresh()
                     refreshBlurs(blurs, options.EnableUIBlur)
-                    
+
                     wait(0.25)
-                    
+
                     options._ksa = false
                     options._ksd = true
                 end
@@ -11517,57 +11857,133 @@ local windowFuncs; windowFuncs = {
         blurs.Display = { { }, uiBlur.new(window.RealWindow.Contents, { window.RealWindow.Contents.Display, window.RealWindow.Contents.Footer }, "DisplayBlur"), 0.3, 2 }
         blurs.KeySystem = { { KS = true }, uiBlur.new(window.RealWindow.Contents, { window.RealWindow.Contents.KeySystemOverlay }, "KeySystemBlur"), 1.5, 3 }
         blurs.KeySystemImage = { { _ = true }, uiBlur.new(window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas, { window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas.BackgroundImage }, "ImageBlur"), 0.5 }
-        
+
         refreshBlurs(blurs, options.EnableUIBlur)
-        
-        window:Clone().Parent = workspace
-        
+
+        for cat, objs in cursorEffects do
+            local col = object.Options.Theme[cat]
+            for _, obj in objs do
+                obj.Color = col
+            end
+        end
+
+        local realWindow = window.RealWindow
+        local realWindowContents = realWindow.Contents
+        local topbarZone = realWindowContents.TopbarBlur.Downsampler.TopbarZone
+        local settingsOverlay = realWindowContents.SettingsBlur.Downsampler.SettingsOverlay
+        local footer = realWindowContents.DisplayBlur.Downsampler.Footer
+        local display = realWindowContents.DisplayBlur.Downsampler.Display
+        local pageButtons = display.PageButtons
+        local keySystemCanvas = realWindowContents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas
+        local keySystemHolder = keySystemCanvas.Holder.Upscaler
+        local keySystemContents = keySystemHolder.Contents
+        local mobileText = mobileButton.CanvasGroup.TextLabel
+
+        defer(connectColorsToWindow, object, {
+            Back = {
+                { realWindow, "BackgroundColor3" },
+                { realWindow.Overlay, "BackgroundColor3" },
+                { settingsOverlay.SettingsHub, "BackgroundColor3" },
+                { settingsOverlay.SettingsHub.AntiCorner, "BackgroundColor3" },
+                { mobileButton, "BackgroundColor3" },
+                { keySystemCanvas, "BackgroundColor3" },
+                { keySystemContents, "BackgroundColor3" }
+            },
+            Stroke = {
+                { realWindow.OutsideStroke, "Color" },
+                { settingsOverlay, "BackgroundColor3" },
+                { window.Shadow, "ImageColor3" },
+                { footer.Label, "TextStrokeColor3" },
+                { display.Pages.PagesDark, "BackgroundColor3" },
+                { mobileButton.UIStroke, "Color" },
+                { mobileText, "TextStrokeColor3" },
+                { keySystemCanvas.Darkener, "BackgroundColor3" },
+                { keySystemHolder.Shadow, "ImageColor3" },
+                { keySystemContents.Bar.Bar, "BackgroundColor3" }
+            },
+            Main = {
+                { realWindow.InsideStroke, "Color" },
+                { realWindow.TopNeon, "BackgroundColor3" },
+                { realWindow.Corner.Resize, "BackgroundColor3" },
+                { mobileButton.CanvasGroup.UIStroke, "Color" }
+            },
+            Text = {
+                { settingsOverlay.SettingsHub.Separator, "BackgroundColor3" },
+                { topbarZone.TitleZone.Title, "TextColor3" },
+                { topbarZone.Right.Settings.ImageLabel, "ImageColor3" },
+                { topbarZone.Right.ToggleUI.ImageLabel, "ImageColor3" },
+                { topbarZone.Right.Discord.ImageLabel, "ImageColor3" },
+                { topbarZone.Right.Close.ImageLabel, "ImageColor3" },
+                { footer.Label, "TextColor3" },
+                { footer.SeparatorTop, "BackgroundColor3" },
+                { pageButtons.SeparatorTop, "BackgroundColor3" },
+                { pageButtons.UserProfile.User, "BackgroundColor3" },
+                { pageButtons.SeparatorLeft, "BackgroundColor3" },
+                { pageButtons.Filler, "BackgroundColor3" },
+                { pageButtons.UserProfile.User.Profile.ProfileBlur.Downsampler.TextLabel, "TextColor3" },
+                { mobileText, "TextColor3" },
+                { keySystemContents.Title, "TextColor3" },
+                { keySystemContents.Button, "BackgroundColor3" },
+                { keySystemContents.Button.UIStroke, "Color" },
+                { keySystemContents.Bar.Bar.UIStroke, "Color" },
+                { keySystemContents.Bar.Bar.Icon, "ImageColor3" },
+                { keySystemContents.Bar.Bar.Icon.Separator, "BackgroundColor3" },
+                { keySystemContents.Bar.Bar.Icon.TextBox, "TextColor3" },
+                { keySystemContents.Bar.Bar.Icon.TextBox, "PlaceholderColor3", function(theme) return theme.Text:Lerp(theme.Stroke, 0.25) end }
+            },
+        })
+        defer(connectColorsToWindow, object, {
+            Text = {
+                { topbarZone.TitleZone.Icon, "ImageColor3", function(theme) return options.RecolorIcon and theme.Text or C3n(1, 1, 1) end }
+            }
+        })
+
         return object
     end,
     KeySystem = function(self, options)
         if typeof(options) ~= "table" then error("No table was passed", 0) end
         if typeof(options.Callback) ~= "function" then error("Missing .Callback = function", 0) end
         if typeof(options.KeyUrl) ~= "string" then error("Missing .KeyUrl = string", 0) end
-        
+
         local woptions = self.Options
         if woptions._ksa then return false end
-        
+
         woptions._ksa = options.KeyUrl
         woptions._kss = 1
         woptions._ksb = false
         woptions._ksd = false
-        
+
         woptions.KeyCallback = options.Callback
         woptions.KeyBackground = options.Background or options.BackgroundImage
-        
+
         self:Refresh()
         refreshBlurs(self._Blurs, woptions.EnableUIBlur)
-        
+
         self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Visible = true
-        
+
         tweenOnce(self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas.Holder.Upscaler, TIn(0.01), { GroupTransparency = 1 })
         tweenOnce(self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas, TIn(0.75 / handleAnimationSpeed(woptions.AnimationSpeed)), { GroupTransparency = 0 })
-        
+
         while not woptions.Visible or self.Window.RealWindow.Overlay.BackgroundTransparency < 0.99 do wait() end
 
         self._Blurs.KeySystem[1].KS = false
         self:Refresh()
         refreshBlurs(self._Blurs, woptions.EnableUIBlur)
-        
+
         local as = 0.75 / handleAnimationSpeed(woptions.AnimationSpeed)
         self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas.Holder.Upscaler:TweenSize(U2s(1, 1), nil, nil, as, true)
         tweenOnce(self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas.Holder.Upscaler, TIn(as / 3), { GroupTransparency = 0 })
-        
+
         repeat wait() until not woptions._ksa or woptions.Closed
-        
+
         woptions.KeyCallback = nil
         woptions.KeyBackground = nil
-        
+
         woptions._ksa = nil
         woptions._kss = 1
         woptions._ksb = nil
         woptions._ksd = true
-        
+
         as = 0.75 / handleAnimationSpeed(woptions.AnimationSpeed)
         self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas.Holder.Upscaler:TweenSize(U2n(1, 25, 1, 12), nil, nil, as, true)
         tweenOnce(self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas, TIn(as), { GroupTransparency = 1 })
@@ -11575,17 +11991,17 @@ local windowFuncs; windowFuncs = {
         self._Blurs.KeySystem[1].KS = true
         self:Refresh()
         refreshBlurs(self._Blurs, woptions.EnableUIBlur)
-        
+
         spawn(function()
             wait(as)
             self.Window.RealWindow.Contents.KeySystemBlur.Downsampler.KeySystemOverlay.Visible = false
         end)
-            
+
         return not woptions.Closed
     end,
     RefreshUserProfile = function(self)
         if self.Options.Closed then return end
-        
+
         local window = self.Window
         local options = self.Options
         local pageButtons = window.RealWindow.Contents.DisplayBlur.Downsampler.Display.PageButtons
@@ -11621,7 +12037,7 @@ local windowFuncs; windowFuncs = {
         if table.isfrozen(options.Theme) then
             options.Theme = tclone(options.Theme)
         end
-        
+
         options.Language = options.Language:sub(1, 2):upper()
         self:RefreshUserProfile()
 
@@ -11649,46 +12065,14 @@ local windowFuncs; windowFuncs = {
         local footer = realWindowContents.DisplayBlur.Downsampler.Footer
         local display = realWindowContents.DisplayBlur.Downsampler.Display
         local pageButtons = display.PageButtons
-        
+
         realWindow.UICorner.CornerRadius = Un(0, options.CornerRadius * 0.1)
-        
-        local theme = options.Theme
-        local themeB, themeM, themeS, themeT = theme.Back, theme.Main, theme.Stroke, theme.Text
 
-        realWindow.BackgroundColor3 = themeB
-        realWindow.Overlay.BackgroundColor3 = themeB
-        settingsOverlay.SettingsHub.BackgroundColor3 = themeB
-        settingsOverlay.SettingsHub.AntiCorner.BackgroundColor3 = themeB
-
-        realWindow.OutsideStroke.Color = themeS
         realWindow.OutsideStroke.Enabled = options.OutsideStroke
-        settingsOverlay.BackgroundColor3 = themeS
-        window.Shadow.ImageColor3 = themeS
-        footer.Label.TextStrokeColor3 = themeS
-        display.Pages.PagesDark.BackgroundColor3 = themeS
-
-        realWindow.InsideStroke.Color = themeM
-        realWindow.TopNeon.BackgroundColor3 = themeM
-        realWindow.Corner.Resize.BackgroundColor3 = themeM
-
-        settingsOverlay.SettingsHub.Separator.BackgroundColor3 = themeT
-        topbarZone.TitleZone.Title.TextColor3 = themeT
-        topbarZone.TitleZone.Icon.ImageColor3 = options.RecolorIcon and themeT or C3n(1, 1, 1)
-        topbarZone.Right.Settings.ImageLabel.ImageColor3 = themeT
-        topbarZone.Right.ToggleUI.ImageLabel.ImageColor3 = themeT
-        topbarZone.Right.Discord.ImageLabel.ImageColor3 = themeT
-        topbarZone.Right.Close.ImageLabel.ImageColor3 = themeT
         topbarZone.Right.Settings.Visible = not options._ksa
         topbarZone.Right.ToggleUI.Visible = not options._ksa
         topbarZone.Right.Discord.Visible = (toclip or request) and options.Discord and clean(options.Discord) ~= ""
         topbarZone.Right.Close.Visible = not not options._ksa
-        footer.Label.TextColor3 = themeT
-        footer.SeparatorTop.BackgroundColor3 = themeT
-        pageButtons.SeparatorTop.BackgroundColor3 = themeT
-        pageButtons.UserProfile.User.BackgroundColor3 = themeT
-        pageButtons.SeparatorLeft.BackgroundColor3 = themeT
-        pageButtons.Filler.BackgroundColor3 = themeT
-        pageButtons.UserProfile.User.Profile.ProfileBlur.Downsampler.TextLabel.TextColor3 = themeT
 
         if options._OldVisible then
             if options.ShadowTransparency ~= options._OldShadowTransparency or options.BackgroundTransparency ~= options._OldBackgroundTransparency then
@@ -11703,14 +12087,14 @@ local windowFuncs; windowFuncs = {
                 window.Shadow.Size = U2n(1, options.ShadowSize * 2, 1, options.ShadowSize * 2)
             end
         end
-        
+
         for _, v in self._Blurs do
             v[2].Smooth = v[3] / handleAnimationSpeed(options.AnimationSpeed)
         end
-        
+
         self._Blurs.Profile[1].Enabled = options.BlurProfile
         refreshBlurs(self._Blurs, options.EnableUIBlur)
-        
+
         local bgImage = realWindowContents.BackgroundImageBlur.Downsampler.BackgroundImage
         setIcon(options.ImageEnabled and options.Image or "", backgrounds, self, bgImage, true)
         local button = self.MobileButton
@@ -11728,12 +12112,6 @@ local windowFuncs; windowFuncs = {
         button.UICorner.CornerRadius = cornerState[options.RoundEverything]
         button.CanvasGroup.UICorner.CornerRadius = cornerState[options.RoundEverything]
 
-        button.BackgroundColor3 = themeB
-        button.UIStroke.Color = themeS
-        button.CanvasGroup.TextLabel.TextColor3 = themeT
-        button.CanvasGroup.TextLabel.TextStrokeColor3 = themeS
-        button.CanvasGroup.UIStroke.Color = themeM
-        
         local shi = settingsOverlay.SettingsHub.ImageBlur.Downsampler.Image
         window.SoundCache.Volume = options.Volume / 200
         window.Sounds.Notification.SoundId = options.NotificationSound
@@ -11759,37 +12137,24 @@ local windowFuncs; windowFuncs = {
         window.Blur.Size = options.FullBlurSize and U2s(1, 1) or U2n(1, -12, 1, -12)
 
         local keysys = realWindowContents.KeySystemBlur.Downsampler.KeySystemOverlay.Canvas
-        keysys.BackgroundColor3 = themeB
-        keysys.Darkener.BackgroundColor3 = themeS
         keysys.UICorner.CornerRadius = realWindow.UICorner.CornerRadius
         keysys.Darkener.UICorner.CornerRadius = realWindow.UICorner.CornerRadius
-        
+
         local keysysbgImage = keysys.ImageBlur.Downsampler.BackgroundImage
         setIcon(options.KeyBackground or bgImage.Image, backgrounds, self, keysysbgImage, true)
         keysysbgImage.Image = bgImage.Image
         keysysbgImage.UICorner.CornerRadius = realWindow.UICorner.CornerRadius
         keysysbgImage.ImageTransparency = options.ImageTransparency
         keysysbgImage.ImageColor3 = options.ImageColor
-        
+
         keysys = keysys.Holder.Upscaler
-        keysys.Shadow.ImageColor3 = themeS
-        
+
         keysys = keysys.Contents
-        keysys.BackgroundColor3 = themeB
         keysys.UICorner.CornerRadius = realWindow.UICorner.CornerRadius
-        keysys.Title.TextColor3 = themeT
-        keysys.Button.BackgroundColor3 = themeT
-        keysys.Button.UIStroke.Color = themeT
         keysys.Button.UIStroke.Enabled = not options.NoStrokes
         keysys.Button.UICorner.CornerRadius = cornerState[options.RoundEverything]
-        keysys.Bar.Bar.BackgroundColor3 = themeS
-        keysys.Bar.Bar.UIStroke.Color = themeT
         keysys.Bar.Bar.UIStroke.Enabled = not options.NoStrokes
         keysys.Bar.Bar.UICorner.CornerRadius = cornerState[options.RoundEverything]
-        keysys.Bar.Bar.Icon.ImageColor3 = themeT
-        keysys.Bar.Bar.Icon.Separator.BackgroundColor3 = themeT
-        keysys.Bar.Bar.Icon.TextBox.TextColor3 = themeT
-        keysys.Bar.Bar.Icon.TextBox.PlaceholderColor3 = themeT:Lerp(themeS, 0.25)
 
         local kst = translate(self, "KeySystemTitle")
         if #kst == 0 then
@@ -11804,15 +12169,15 @@ local windowFuncs; windowFuncs = {
         end
 
         keysys.Bar.Bar.Icon.TextBox.PlaceholderText = kst
-        
+
         local kss = options._kss or 1
         kst = translate(self, "KeyButton" .. kss)
         if #kst == 0 then
             kst = UI_DEBUG.EN_KEY_STATES[kss]
         end
-        
+
         keysys.Button.Text = kst
-        
+
         if options.NeonType == "Stroke" then
             realWindowContents.Size = U2n(1, -options.NeonThickness * 2, 1, -options.NeonThickness * 2)
             realWindowContents.Position = U2s(0.5, 0.5)
@@ -11836,6 +12201,7 @@ local windowFuncs; windowFuncs = {
         if tt ~= options._PrevTooltip then
             options._PrevTooltip = tt
             tooltipObject.Options.Window = self
+            updateTooltipColors()
             tooltipObject.Options.Text = tt
             tooltipObject:Refresh()
         end
@@ -11856,7 +12222,6 @@ local windowFuncs; windowFuncs = {
     LaunchTimes = round(ranTimes),
     RefreshAll = function(self)
         refreshEverything(self)
-        self.ThemeChanged:Fire(self.Options.Theme)
     end,
     AddTab = function(...)
         local tab = newObject(tabFuncs, ...);
@@ -11943,6 +12308,20 @@ local windowFuncs; windowFuncs = {
             end
 
             return tabOrTabName:SwitchTo()
+        elseif tabOrTabName == nil then
+            self.Self.CurrentTab = false
+
+            for i, v in self.Objects do
+                if v.Class == "Tab" or v.Class == "CustomTab" then
+                    local visible = false
+                    v.Holder.Visible = visible
+
+                    tweenOnce(v.TabButton.ButtonItself.Icon, TIn(0.75 / handleAnimationSpeed(self.AnimationSpeed)), { ImageTransparency = visible and 0 or 0.25 })
+                    tweenOnce(v.TabButton.ButtonItself.Title, TIn(0.75 / handleAnimationSpeed(self.AnimationSpeed)), { TextTransparency = visible and 0 or 0.25 })
+                    tweenOnce(v.TabButton, TIn(1.5 / handleAnimationSpeed(self.AnimationSpeed)), { BackgroundTransparency = visible and 0.95 or 1 })
+                    tweenOnce(v.TabButton.Indicator, TIn(0.5 / handleAnimationSpeed(self.AnimationSpeed)), { Position = U2n(0, visible and 0 or -2, 0.5, 0) })
+                end
+            end
         end
 
         error("Tab not found!", 0)
@@ -12023,9 +12402,9 @@ local windowFuncs; windowFuncs = {
 
         window.Parent.Visible = false
         cursorLib:SetActive(self.Cursor, false)
-        
+
         wait(0.1)
-        
+
         cursorLib:SetActive(self.Cursor, false)
         self.Options.Debounce = false
     end,
@@ -12035,7 +12414,7 @@ local windowFuncs; windowFuncs = {
 
         spawn(self.Options.OnClose, self)
         self.Destroying:Fire()
-        
+
         for i, v in self.Defaults do
             i:Set(v)
         end
@@ -12047,14 +12426,14 @@ local windowFuncs; windowFuncs = {
         end
 
         uiBackBlur:Unbind(self.BlurFrame)
-        
+
         render(2)
-        
+
         self.Options.Debounce = false
         self.Options.Closed = true
-        
+
         self:Hide()
-        
+
         local function clear()
             self.Window:Destroy()
             self.MobileButton:Destroy()
@@ -12070,7 +12449,7 @@ local windowFuncs; windowFuncs = {
                 v[2]:Destroy()
             end
         end
-        
+
         if not self.Window.Visible then
             clear()
         else
@@ -12106,24 +12485,24 @@ local windowFuncs; windowFuncs = {
 
         self:Refresh()
     end,
-    
+
     TryClose = function(self)
         local options = self.Options
         if options._closedb or options.Closed then return end
         options._closedb = true
-        
+
         if self:WindowNotification({ Title = "Are you sure?", Text = "Are you sure you wanna close the UI?", HasButtons = true }) then
             self:Close()
         end
-        
+
         options._closedb = false
     end,
-    
+
     SmartNotification = function(self, options)
         options = options or { }
         options.HasButtons = true
         options.Duration = inf
-        
+
         if self.Options.Visible then
             return self:InWindowNotification(options)
         else
@@ -12168,7 +12547,7 @@ tooltipObject = newObject({
             Options = options,
             Class = self.Class
         }, self)
-        
+
         spawn(function()
             while wait(1 / 48) do
                 object.Proxy:Refresh()
@@ -12197,16 +12576,6 @@ tooltipObject = newObject({
         tt.Position = U2o(clamp(targetPos.X, safe, screenSize.X - tooltipSize.X - safe), clamp(targetPos.Y, safe + tooltipSize.Y, screenSize.Y - tooltipSize.Y - safe))
         tt.TextLabelInvisible.Size = U2o(floor(gui.AbsoluteSize.X / 2.5), 10000)
 
-        local theme = (options.Window or coreWindow)
-        if theme then
-            theme = theme.Theme
-        end
-
-        if not theme then return end
-
-        tt.BackgroundColor3 = theme.Back:Lerp(theme.Stroke, options.Dark and 0.35 or 0)
-        tt.OutsideStroke.Color = theme.Stroke
-        tt.TextLabel.TextColor3 = theme.Text
     end
 })
 
@@ -12273,6 +12642,7 @@ library = newObject({
 
         if tt ~= "" then
             tooltipObject.Options.Window = self
+            updateTooltipColors()
             tooltipObject.Options.Text = tt
             tooltipObject:Refresh()
 
@@ -12295,7 +12665,7 @@ library = newObject({
         repeat render() until window.Options.ExecutionTimes -- function
 
         window._Ready = true
-        
+
         local function applyTs()
             rs.RenderStepped:Wait()
 
@@ -12304,7 +12674,7 @@ library = newObject({
                 return ts
             end
         end
-        
+
         spawn(function()
             while true do
                 local s, e = pcall(applyTs)
@@ -12312,7 +12682,7 @@ library = newObject({
                     if e then
                         window:SetThemeString(e)
                     end
-                        
+
                     break
                 end
             end
@@ -12351,7 +12721,7 @@ spawn(function()
     loadedImagesCache.Name = "LoadedImagesCache"
     loadedImagesCache.GroupTransparency = 0.98
     loadedImagesCache.Size = U2o(1, 1)
-    
+
     local function loadImage(id, name)
         local img = Inew("ImageLabel", loadedImagesCache)
         img.BackgroundTransparency = 1
@@ -12360,11 +12730,11 @@ spawn(function()
         img.Name = name
         img.Size = loadedImagesCache.Size
     end
-    
+
     for i, v in icons do
         spawn(loadImage, v, i)
     end
-    
+
     for i, v in backgrounds do
         spawn(loadImage, v, i)
     end
@@ -13176,7 +13546,7 @@ return {
         local script = objects["Instance2"];
 return {
     Name = "FireLibrary",
-    Version = "5.2.59",
+    Version = "5.2.6",
     Author = "Kawi (@its_kawi on Discord)"
 }
     end;
