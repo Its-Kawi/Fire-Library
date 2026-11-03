@@ -4690,12 +4690,8 @@ return {
 local UI_DEBUG = require(script.Data.DEBUG)
 
 local tfind = table.find
-local game = game
-local workspace = workspace
 local typeof = typeof
 local newproxy = newproxy
-local tostring = tostring
-local tonumber = tonumber
 local mrandom = math.random
 local _pcall = pcall
 local tremove = table.remove
@@ -4716,7 +4712,6 @@ local tsort = table.sort
 local tclear = table.clear
 local tfreeze = table.freeze
 local warn, error, print = warn, error, print
-local type = type
 local max32 = tonumber("2147483647")
 
 local pcall = function(fn, ...)
@@ -4747,7 +4742,6 @@ local U2s = UDim2.fromScale
 local U2n = UDim2.new
 local U2o = UDim2.fromOffset
 local Un = UDim.new
-local unpack = unpack
 local pack = table.pack
 local Inew = Instance.new
 local setmetatable = setmetatable
@@ -4758,7 +4752,6 @@ local C3n = Color3.new
 local C3R = Color3.fromRGB
 local V2n = Vector2.new
 local TIn = TweenInfo.new
-local tick = tick
 
 local rs = game:GetService("RunService")
 local function render(times)
