@@ -12303,6 +12303,8 @@ local windowFuncs; windowFuncs = {
                     tweenOnce(v.TabButton.Indicator, TIn(0.5 / handleAnimationSpeed(self.AnimationSpeed)), { Position = U2n(0, visible and 0 or -2, 0.5, 0) })
                 end
             end
+            
+            return
         end
 
         error("Tab not found!", 0)
