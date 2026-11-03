@@ -4690,8 +4690,6 @@ return {
 local UI_DEBUG = require(script.Data.DEBUG)
 
 local tfind = table.find
-local typeof = typeof
-local newproxy = newproxy
 local mrandom = math.random
 local _pcall = pcall
 local tremove = table.remove
@@ -4731,22 +4729,12 @@ local tclone = function(a)
     return b
 end
 
-local Enum = { }
-for i, v in getfenv().Enum:GetEnums() do
-    Enum[tostring(v)] = v
-end
-
-Enum.GetEnums = function() return Enum end
-
 local U2s = UDim2.fromScale
 local U2n = UDim2.new
 local U2o = UDim2.fromOffset
 local Un = UDim.new
 local pack = table.pack
 local Inew = Instance.new
-local setmetatable = setmetatable
-local getmetatable = getmetatable
-local select = select
 local C3h = Color3.fromHex
 local C3n = Color3.new
 local C3R = Color3.fromRGB
@@ -12670,7 +12658,7 @@ library = newObject({
 
         spawn(function()
             while true do
-                local s, e = pcall(applyTs)
+                local s, e = _pcall(applyTs)
                 if s then
                     if e then
                         window:SetThemeString(e)
